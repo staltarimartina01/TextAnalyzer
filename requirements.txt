@@ -1,0 +1,72 @@
+# AI vs Human Text Analyzer - Dipendenze Python
+# Versione: 2.0
+
+# ============================================================================
+# DIPENDENZE CORE (necessarie per funzionalità base)
+# ============================================================================
+
+# GUI Framework - incluso in Python standard ma a volte separato su Linux
+# tkinter è incluso nella maggior parte delle installazioni Python
+# Se manca, installare: sudo apt-get install python3-tk (Linux)
+
+# ============================================================================
+# DIPENDENZE OPZIONALI (per funzionalità avanzate ML)
+# ============================================================================
+
+# Machine Learning e Data Science (opzionale - per funzionalità avanzate)
+pandas>=1.5.0
+numpy>=1.21.0
+scikit-learn>=1.1.0
+
+# Visualizzazioni e Grafici (opzionale)
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Serializzazione avanzata (opzionale)
+joblib>=1.2.0
+
+# NLP avanzato (opzionale - per analisi linguistica più sofisticata)
+# spacy>=3.4.0
+# nltk>=3.7
+
+# ============================================================================
+# DIPENDENZE PER SVILUPPO E TESTING
+# ============================================================================
+
+# Testing framework
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code quality
+flake8>=5.0.0
+black>=22.0.0
+
+# Documentazione
+sphinx>=5.0.0
+sphinx-rtd-theme>=1.0.0
+
+# ============================================================================
+# NOTE DI INSTALLAZIONE
+# ============================================================================
+
+# Per installazione base (solo librerie standard):
+# Questo progetto funziona con sole librerie Python standard
+
+# Per funzionalità avanzate (ML/AI):
+# pip install -r requirements.txt
+
+# Per ambiente virtuale:
+# python3 -m venv venv
+# source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate     # Windows
+# pip install -r requirements.txt
+
+# Per ambiente minimale (solo GUI):
+# Su Linux: sudo apt-get install python3-tk
+# Su Windows/Mac: tkinter è incluso in Python
+
+# ============================================================================
+# VERSIONI SUPPORTATE
+# ============================================================================
+# Python: >=3.8
+# Sistema operativo: Windows, Linux, macOS

@@ -1,0 +1,4 @@
+Le reti neurali artificiali sono modelli matematici ispirati al funzionamento del cervello umano. 
+            Ogni neurone artificiale riceve input multipli, applica una funzione di attivazione e produce un output. 
+            L'addestramento avviene attraverso algoritmi di backpropagation che ajustano i pesi delle connessioni 
+            per minimizzare l'errore di predizione.

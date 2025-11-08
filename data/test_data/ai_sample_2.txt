@@ -1,0 +1,4 @@
+L'elaborazione del linguaggio naturale costituisce un campo di ricerca multidisciplinare che 
+            combina linguistica computazionale, informatica e intelligenza artificiale. Gli obiettivi principali 
+            includono la comprensione automatica del testo, la generazione di linguaggio naturale e la traduzione 
+            automatica tra diverse lingue.

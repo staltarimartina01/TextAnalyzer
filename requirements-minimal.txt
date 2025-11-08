@@ -1,0 +1,16 @@
+# AI vs Human Text Analyzer - Dipendenze Minime
+# Solo librerie standard Python (nessuna installazione richiesta)
+
+# NOTE: Questo progetto funziona con sole librerie Python standard
+# Nessun pip install necessario per funzionalità base!
+
+# Librerie standard utilizzate:
+# - os, sys, json, re, threading
+# - statistics, collections, tempfile
+# - argparse, datetime, typing
+# - tkinter (per GUI, spesso incluso in Python)
+
+# Per GUI su Linux:
+# sudo apt-get install python3-tk
+
+# Per funzionalità ML avanzate, usa requirements.txt completo

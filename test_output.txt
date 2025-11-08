@@ -1,0 +1,19 @@
+================================================================================
+REPORT ANALISI TESTI AI vs UMANI
+================================================================================
+Data analisi: 2025-11-08 21:43:16
+Numero di testi analizzati: 1
+
+STATISTICHE GENERALI:
+  Testi identificati come AI: 0 (0.0%)
+  Testi identificati come Umani: 1 (100.0%)
+
+DETTAGLI ANALISI:
+--------------------------------------------------------------------------------
+
+1. testoai.txt
+   Classificazione: UMANO
+   Confidenza: 93.3%
+   Diversità lessicale: 0.721
+   Lunghezza media frase: 15.3 parole
+   Consistenza stilistica: 0.000
