@@ -583,31 +583,8 @@ Questa metrica è efficace per testi di media lunghezza."""
             if child:
                 child.deleteLater()
         
-        # Header risultato
-        header_group = self.create_metric_group("🧠 Risultato Principale")
-        
-        assessment = result.get('final_assessment', {})
-        prediction = assessment.get('prediction', 'Sconosciuto')
-        confidence = assessment.get('confidence', 0)
-        
-        # Mostra il risultato principale
-        result_text = f"Classificazione: {prediction} (Confidenza: {confidence:.1%})"
-        if prediction == 'AI':
-            result_text = f"🧠 {result_text}"
-        else:
-            result_text = f"👤 {result_text}"
-        
-        result_label = QLabel(result_text)
-        result_label.setStyleSheet("""
-            QLabel {
-                font-size: 18px;
-                font-weight: bold;
-                color: #2e86c1;
-                padding: 10px;
-            }
-        """)
-        header_group.layout().addWidget(result_label)
-        self.results_layout.addWidget(header_group)
+        # Sezione Risultato Principale
+        self.create_main_result_section(result)
         
         # Sezione Statistiche Testo
         self.create_stats_section(result)
@@ -626,6 +603,55 @@ Questa metrica è efficace per testi di media lunghezza."""
         
         self.results_layout.addStretch()
     
+    def create_main_result_section(self, result: Dict):
+        """Crea la sezione del risultato principale"""
+        group = self.create_metric_group("")
+        
+        # Titolo centrato dentro il box
+        title_label = QLabel("🧠 Risultato Principale")
+        title_label.setStyleSheet("""
+            font-size: 16px;
+            font-weight: bold;
+            color: #2e86c1;
+            padding: 5px;
+            text-align: center;
+            margin: 5px;
+        """)
+        title_label.setAlignment(Qt.AlignCenter)
+        group.layout().addWidget(title_label)
+        
+        # Linea separatrice
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setStyleSheet("color: #dee2e6; margin: 5px;")
+        group.layout().addWidget(line)
+        
+        # Risultato della classificazione
+        assessment = result.get('final_assessment', {})
+        prediction = assessment.get('prediction', 'Sconosciuto')
+        confidence = assessment.get('confidence', 0)
+        
+        # Mostra il risultato principale
+        result_text = f"Classificazione: {prediction} (Confidenza: {confidence:.1%})"
+        if prediction == 'AI':
+            result_text = f"🧠 {result_text}"
+        else:
+            result_text = f"👤 {result_text}"
+        
+        result_label = QLabel(result_text)
+        result_label.setStyleSheet("""
+            font-size: 16px;
+            font-weight: bold;
+            color: #2e86c1;
+            padding: 10px;
+            text-align: center;
+        """)
+        result_label.setAlignment(Qt.AlignCenter)
+        group.layout().addWidget(result_label)
+        
+        self.results_layout.addWidget(group)
+
     def create_metric_group(self, title: str) -> QGroupBox:
         """Crea un gruppo moderno per le metriche"""
         group = QGroupBox(title)
