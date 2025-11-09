@@ -531,7 +531,30 @@ Questa metrica è efficace per testi di media lunghezza."""
                 # Abilita analisi
                 self.analyze_btn.setEnabled(True)
                 
-                self.status_bar.showMessage("File caricato con successo")
+                # Esegui analisi automatica
+                self.status_bar.showMessage("File caricato, eseguo analisi automatica...")
+                QApplication.processEvents()
+                
+                # Analizza automaticamente il nuovo file
+                try:
+                    result = self.analyzer.analyze_text(text, os.path.basename(file_path))
+                    self.analysis_results = result
+                    
+                    if 'error' not in result:
+                        # Calcola varianza frasi
+                        sentence_variance = self.calculate_sentence_variance(text)
+                        
+                        # Visualizza risultati
+                        self.display_analysis_results(result, sentence_variance)
+                        
+                        # Cambia alla tab risultati
+                        self.tabs.setCurrentIndex(1)
+                        
+                        self.status_bar.showMessage("File caricato e analizzato automaticamente")
+                    else:
+                        self.status_bar.showMessage(f"Errore nell'analisi: {result['error']}")
+                except Exception as e:
+                    self.status_bar.showMessage(f"Errore durante l'analisi automatica: {str(e)}")
                 
             except Exception as e:
                 QMessageBox.critical(self, "Errore", f"Errore nel caricamento del file:\n{str(e)}")
