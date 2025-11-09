@@ -182,7 +182,9 @@ class FeatureExtractor:
             'lexical': self.extract_lexical_features(text),
             'syntactic': self.extract_syntactic_features(text),
             'style': self.extract_style_features(text),
-            'semantic': self.extract_semantic_features(text)
+            'semantic': self.extract_semantic_features(text),
+            'sentiment': self.extract_sentiment_features(text),
+            'readability': self.extract_readability_features(text)
         }
         
         # Combina tutte le features in un vettore unico
@@ -336,3 +338,421 @@ class FeatureExtractor:
         semantic_keys.extend(['repeated_concepts_ratio', 'topic_consistency', 'argumentation_indicators'])
         
         return {key: 0.0 for key in semantic_keys}
+
+    # =============================================================================
+    # SENTIMENT ANALYSIS
+    # =============================================================================
+    
+    def extract_sentiment_features(self, text: str) -> Dict[str, float]:
+        """Estrae features per l'analisi del sentiment"""
+        words = self.text_processor.tokenize(text)
+        sentences = self.text_processor.split_sentences(text)
+        
+        if not words or not sentences:
+            return self._empty_sentiment_features()
+        
+        # Dizionari per sentiment (parole positive, negative, neutro)
+        positive_words = {
+            'ottimo', 'eccellente', 'fantastico', 'meraviglioso', 'straordinario', 'formidabile',
+            'positivo', 'bene', 'buono', 'grandioso', 'magnifico', 'splendido', 'brillante',
+            'felice', 'contento', 'gioioso', 'allegro', 'entusiasta', 'motivato', 'ispirato',
+            'amore', 'amicizia', 'affetto', 'caro', 'adorabile', 'delizioso', 'piacevole',
+            'successo', 'vittoria', 'trionfo', 'eccellente', 'superbo', 'impressionante',
+            'creatività', 'innovativo', 'geniale', 'intelligente', 'brillante', 'talento',
+            'pace', 'tranquillità', 'serenità', 'armonia', 'benessere', 'salute', 'prosperità',
+            'speranza', 'fiducia', 'ottimismo', 'entusiasmo', 'energia', 'vitalità',
+            'qualità', 'perfezione', 'eleganza', 'bellezza', 'attrattiva', 'fascino'
+        }
+        
+        negative_words = {
+            'terribile', 'orribile', 'brutto', 'pessimo', 'orribile', 'deplorevole', 'disgusto',
+            'negativo', 'cattivo', 'pessimo', 'orribile', 'disastroso', 'catastrofico', 'lamentabile',
+            'triste', 'mesto', 'malinconico', 'depresso', 'avvilito', 'sconsolato', 'rammaricato',
+            'odio', 'antipatia', 'avversione', 'sdegno', 'disprezzo', 'insofferenza', 'irritazione',
+            'fallimento', 'sconfitta', 'sconfitta', 'insuccesso', 'frustrazione', 'delusione',
+            'stupidità', 'ignoranza', 'incompetenza', 'incapacità', 'mancanza', 'deficienza',
+            'conflitto', 'guerra', 'lotta', 'guerriglio', 'pericolo', 'minaccia', 'paura',
+            'disperazione', 'disgrazia', 'miseria', 'dolore', 'sofferenza', 'angoscia', 'agonia',
+            'corruzione', 'ingiustizia', 'inefficienza', 'burocrazia', 'inemprobabilità',
+            'mediocrità', 'banalità', 'noia', 'monotonia', 'repetitività'
+        }
+        
+        # Conteggio sentiment
+        positive_count = sum(1 for word in words if word.lower() in positive_words)
+        negative_count = sum(1 for word in words if word.lower() in negative_words)
+        total_sentiment_words = len(words)
+        
+        # Calcolo sentiment score
+        positive_ratio = positive_count / total_sentiment_words if total_sentiment_words > 0 else 0
+        negative_ratio = negative_count / total_sentiment_words if total_sentiment_words > 0 else 0
+        net_sentiment = positive_ratio - negative_ratio
+        
+        # Intensità emotiva (basata su punteggiatura e maiuscole)
+        intensity_indicators = 0
+        intensity_indicators += len(self.patterns['exclamations'].findall(text)) * 0.1
+        intensity_indicators += len(self.patterns['questions'].findall(text)) * 0.05
+        intensity_indicators += sum(1 for c in text if c.isupper()) / len(text) if text else 0
+        
+        # Emozioni specifiche
+        emotion_indicators = {
+            'joy_indicators': sum(1 for word in words if word.lower() in {'felice', 'contento', 'gioioso', 'allegro', 'lieto'}),
+            'sadness_indicators': sum(1 for word in words if word.lower() in {'triste', 'mesto', 'addolorato', 'piangere', 'lacrime'}),
+            'anger_indicators': sum(1 for word in words if word.lower() in {'arrabbiato', 'furioso', 'irritato', 'indignato', 'sdegno'}),
+            'fear_indicators': sum(1 for word in words if word.lower() in {'paura', 'terrore', 'panico', 'spavento', 'inquietudine'}),
+            'surprise_indicators': sum(1 for word in words if word.lower() in {'sorpresa', 'stupore', 'incredulo', 'meravigliato', 'sorpreso'})
+        }
+        
+        # Sentiment analysis features
+        sentiment_features = {
+            'positive_sentiment_ratio': positive_ratio,
+            'negative_sentiment_ratio': negative_ratio,
+            'net_sentiment_score': net_sentiment,
+            'sentiment_intensity': min(intensity_indicators, 1.0),  # Normalizzato
+            'emotional_clarity': abs(net_sentiment),  # Chiarezza emotiva
+            'sentiment_variance': self._calculate_sentiment_variance(text),
+            'joy_indicators_ratio': emotion_indicators['joy_indicators'] / total_sentiment_words if total_sentiment_words > 0 else 0,
+            'sadness_indicators_ratio': emotion_indicators['sadness_indicators'] / total_sentiment_words if total_sentiment_words > 0 else 0,
+            'anger_indicators_ratio': emotion_indicators['anger_indicators'] / total_sentiment_words if total_sentiment_words > 0 else 0,
+            'fear_indicators_ratio': emotion_indicators['fear_indicators'] / total_sentiment_words if total_sentiment_words > 0 else 0,
+            'surprise_indicators_ratio': emotion_indicators['surprise_indicators'] / total_sentiment_words if total_sentiment_words > 0 else 0,
+            'dominant_emotion': self._identify_dominant_emotion(emotion_indicators),
+            'emotional_consistency': self._calculate_emotional_consistency(sentences)
+        }
+        
+        return sentiment_features
+    
+    def _calculate_sentiment_variance(self, text: str) -> float:
+        """Calcola la varianza del sentiment nel testo"""
+        sentences = self.text_processor.split_sentences(text)
+        if len(sentences) < 2:
+            return 0.0
+        
+        sentence_sentiments = []
+        for sentence in sentences:
+            words = self.text_processor.tokenize(sentence)
+            if words:
+                # Calcola sentiment per ogni frase
+                positive_words = {'bene', 'buono', 'ottimo', 'felice', 'positivo', 'bellissimo', 'fantastico'}
+                negative_words = {'male', 'cattivo', 'terribile', 'triste', 'negativo', 'orribile', 'pessimo'}
+                
+                pos_count = sum(1 for word in words if word.lower() in positive_words)
+                neg_count = sum(1 for word in words if word.lower() in negative_words)
+                
+                sentiment_score = (pos_count - neg_count) / len(words) if words else 0
+                sentence_sentiments.append(sentiment_score)
+        
+        if not sentence_sentiments:
+            return 0.0
+        
+        mean_sentiment = sum(sentence_sentiments) / len(sentence_sentiments)
+        variance = sum((s - mean_sentiment) ** 2 for s in sentence_sentiments) / len(sentence_sentiments)
+        return variance
+    
+    def _identify_dominant_emotion(self, emotion_indicators: Dict[str, int]) -> float:
+        """Identifica l'emozione dominante (0=sadness, 0.5=neutral, 1=joy)"""
+        max_emotion = max(emotion_indicators.values())
+        if max_emotion == 0:
+            return 0.5  # Neutro
+        
+        dominant_emotions = {
+            'joy_indicators': 1.0,
+            'surprise_indicators': 0.7,
+            'anger_indicators': 0.2,
+            'sadness_indicators': 0.0,
+            'fear_indicators': 0.1
+        }
+        
+        for emotion, value in emotion_indicators.items():
+            if value == max_emotion:
+                return dominant_emotions.get(emotion, 0.5)
+        
+        return 0.5
+    
+    def _calculate_emotional_consistency(self, sentences: List[str]) -> float:
+        """Calcola la consistenza emotiva tra le frasi"""
+        if len(sentences) < 2:
+            return 1.0
+        
+        sentence_sentiments = []
+        for sentence in sentences:
+            words = self.text_processor.tokenize(sentence)
+            if words:
+                # Mappatura semplificata del sentiment
+                positive_patterns = ['bene', 'buono', 'felice', 'ottimo', 'contento', 'positivo', 'bellissimo']
+                negative_patterns = ['male', 'cattivo', 'triste', 'terribile', 'negativo', 'pessimo', 'orribile']
+                
+                pos_score = sum(1 for word in words if word.lower() in positive_patterns)
+                neg_score = sum(1 for word in words if word.lower() in negative_patterns)
+                
+                if pos_score > neg_score:
+                    sentence_sentiments.append(1.0)  # Positivo
+                elif neg_score > pos_score:
+                    sentence_sentiments.append(-1.0)  # Negativo
+                else:
+                    sentence_sentiments.append(0.0)  # Neutro
+        
+        if not sentence_sentiments:
+            return 1.0
+        
+        # Calcola consistenza (quante frasi hanno lo stesso sentiment)
+        consistency_scores = []
+        for i in range(len(sentence_sentiments)):
+            for j in range(i + 1, len(sentence_sentiments)):
+                if sentence_sentiments[i] == sentence_sentiments[j]:
+                    consistency_scores.append(1.0)
+                else:
+                    consistency_scores.append(0.0)
+        
+        return sum(consistency_scores) / len(consistency_scores) if consistency_scores else 1.0
+    
+    def _empty_sentiment_features(self) -> Dict[str, float]:
+        return {key: 0.0 for key in [
+            'positive_sentiment_ratio', 'negative_sentiment_ratio', 'net_sentiment_score',
+            'sentiment_intensity', 'emotional_clarity', 'sentiment_variance',
+            'joy_indicators_ratio', 'sadness_indicators_ratio', 'anger_indicators_ratio',
+            'fear_indicators_ratio', 'surprise_indicators_ratio', 'dominant_emotion',
+            'emotional_consistency'
+        ]}
+
+    # =============================================================================
+    # READABILITY ANALYSIS
+    # =============================================================================
+    
+    def extract_readability_features(self, text: str) -> Dict[str, float]:
+        """Estrae features per l'indice di leggibilità"""
+        words = self.text_processor.tokenize(text)
+        sentences = self.text_processor.split_sentences(text)
+        
+        if not words or not sentences:
+            return self._empty_readability_features()
+        
+        total_sentences = len(sentences)
+        total_words = len(words)
+        total_syllables = self._count_syllables_in_text(text)
+        
+        # Calcolo metriche base
+        avg_sentence_length = total_words / total_sentences
+        avg_syllables_per_word = total_syllables / total_words if total_words > 0 else 0
+        
+        # Indici di leggibilità
+        readability_scores = {
+            'flesch_reading_ease': self._calculate_flesch_reading_ease(avg_sentence_length, avg_syllables_per_word),
+            'flesch_kincaid_grade': self._calculate_flesch_kincaid_grade(avg_sentence_length, avg_syllables_per_word),
+            'gunning_fog_index': self._calculate_gunning_fog_index(text, avg_sentence_length),
+            'automated_readability_index': self._calculate_automated_readability_index(text, words),
+            'coleman_liau_index': self._calculate_coleman_liau_index(text),
+            'smog_index': self._calculate_smog_index(text, total_sentences)
+        }
+        
+        # Metriche di complessità linguistica
+        complexity_features = {
+            'avg_sentence_length': avg_sentence_length,
+            'avg_syllables_per_word': avg_syllables_per_word,
+            'long_sentences_ratio': sum(1 for sentence in sentences if len(sentence.split()) > 20) / total_sentences,
+            'very_long_sentences_ratio': sum(1 for sentence in sentences if len(sentence.split()) > 30) / total_sentences,
+            'short_sentences_ratio': sum(1 for sentence in sentences if len(sentence.split()) < 8) / total_sentences,
+            'complex_words_ratio': self._calculate_complex_words_ratio(words, total_syllables),
+            'polysyllabic_words_ratio': self._calculate_polysyllabic_words_ratio(words),
+            'technical_terms_ratio': self._calculate_technical_terms_ratio(words)
+        }
+        
+        # Struttura del testo
+        structural_features = {
+            'paragraph_count': len(self.text_processor.extract_paragraphs(text)),
+            'avg_sentence_length_variance': self._calculate_sentence_length_variance(sentences),
+            'connectors_ratio': self._calculate_connectors_ratio(words),
+            'subordination_ratio': self._calculate_subordination_ratio(text)
+        }
+        
+        # Combina tutte le features
+        readability_features = {**readability_scores, **complexity_features, **structural_features}
+        return readability_features
+    
+    def _count_syllables_in_text(self, text: str) -> int:
+        """Conta le sillabe totali nel testo"""
+        words = self.text_processor.tokenize(text)
+        return sum(self._count_syllables(word) for word in words)
+    
+    def _count_syllables(self, word: str) -> int:
+        """Conta le sillabe in una parola (approssimazione)"""
+        word = word.lower()
+        vowels = 'aeiouyàèéìíòóùú'
+        syllable_count = 0
+        previous_was_vowel = False
+        
+        for char in word:
+            is_vowel = char in vowels
+            if is_vowel and not previous_was_vowel:
+                syllable_count += 1
+            previous_was_vowel = is_vowel
+        
+        # Aggiusta per parole che finiscono con silenti
+        if word.endswith('e') and syllable_count > 1:
+            syllable_count -= 1
+        
+        return max(1, syllable_count)  # Almeno una sillaba per parola
+    
+    def _calculate_flesch_reading_ease(self, avg_sentence_length: float, avg_syllables_per_word: float) -> float:
+        """Calcola l'indice di leggibilità Flesch Reading Ease"""
+        if avg_sentence_length <= 0 or avg_syllables_per_word <= 0:
+            return 0.0
+        
+        score = 206.835 - (1.015 * avg_sentence_length) - (84.6 * avg_syllables_per_word)
+        return max(0, min(100, score))  # Range 0-100
+    
+    def _calculate_flesch_kincaid_grade(self, avg_sentence_length: float, avg_syllables_per_word: float) -> float:
+        """Calcola l'indice Flesch-Kincaid Grade Level"""
+        if avg_sentence_length <= 0 or avg_syllables_per_word <= 0:
+            return 0.0
+        
+        score = (0.39 * avg_sentence_length) + (11.8 * avg_syllables_per_word) - 15.59
+        return max(0, score)
+    
+    def _calculate_gunning_fog_index(self, text: str, avg_sentence_length: float) -> float:
+        """Calcola l'indice Gunning Fog"""
+        words = self.text_processor.tokenize(text)
+        if not words or avg_sentence_length <= 0:
+            return 0.0
+        
+        complex_words = sum(1 for word in words if self._count_syllables(word) >= 3)
+        complex_words_ratio = complex_words / len(words)
+        
+        score = 0.4 * (avg_sentence_length + (complex_words_ratio * 100))
+        return max(0, score)
+    
+    def _calculate_automated_readability_index(self, text: str, words: List[str]) -> float:
+        """Calcola l'Automated Readability Index"""
+        if not words or len(text) == 0:
+            return 0.0
+        
+        characters = sum(1 for char in text if char.isalnum())
+        avg_characters_per_word = characters / len(words)
+        
+        sentences = self.text_processor.split_sentences(text)
+        if not sentences:
+            return 0.0
+        
+        score = (4.71 * avg_characters_per_word) + (0.5 * len(words) / len(sentences)) - 21.43
+        return max(0, score)
+    
+    def _calculate_coleman_liau_index(self, text: str) -> float:
+        """Calcola l'indice Coleman-Liau"""
+        if not text:
+            return 0.0
+        
+        letters = sum(1 for char in text if char.isalpha())
+        words = self.text_processor.tokenize(text)
+        sentences = self.text_processor.split_sentences(text)
+        
+        if not words or not sentences:
+            return 0.0
+        
+        letters_per_100_words = (letters / len(words)) * 100
+        sentences_per_100_words = (len(sentences) / len(words)) * 100
+        
+        score = (0.0588 * letters_per_100_words) - (0.296 * sentences_per_100_words) - 15.8
+        return max(0, score)
+    
+    def _calculate_smog_index(self, text: str, total_sentences: int) -> float:
+        """Calcola l'indice SMOG (Simple Measure of Gobbledygook)"""
+        if total_sentences < 1:
+            return 0.0
+        
+        words = self.text_processor.tokenize(text)
+        polysyllabic_words = sum(1 for word in words if self._count_syllables(word) >= 3)
+        
+        if polysyllabic_words == 0:
+            return 0.0
+        
+        score = 1.0430 * (polysyllabic_words * (30 / total_sentences)) + 3.1291
+        return max(0, score)
+    
+    def _calculate_complex_words_ratio(self, words: List[str], total_syllables: int) -> float:
+        """Calcola il rapporto di parole complesse (3+ sillabe)"""
+        if not words:
+            return 0.0
+        
+        complex_words = sum(1 for word in words if self._count_syllables(word) >= 3)
+        return complex_words / len(words)
+    
+    def _calculate_polysyllabic_words_ratio(self, words: List[str]) -> float:
+        """Calcola il rapporto di parole polisillabiche (4+ sillabe)"""
+        if not words:
+            return 0.0
+        
+        polysyllabic_words = sum(1 for word in words if self._count_syllables(word) >= 4)
+        return polysyllabic_words / len(words)
+    
+    def _calculate_technical_terms_ratio(self, words: List[str]) -> float:
+        """Calcola il rapporto di termini tecnici (parole lunghe e complesse)"""
+        if not words:
+            return 0.0
+        
+        technical_indicators = [
+            # Suffissi tipici di termini tecnici
+            'izzazione', 'ificazione', 'izzazione', 'ologia', 'grafia', 'metria', 'scopia',
+            'sintesi', 'analisi', 'metodologia', 'filosofia', 'teoria', 'prassi', 'pratiche',
+            'processo', 'procedimento', 'sistema', 'apparato', 'meccanismo', 'funzionamento',
+            'struttura', 'organizzazione', 'architettura', 'configurazione', 'implementazione'
+        ]
+        
+        technical_terms = sum(1 for word in words 
+                            if len(word) > 8 and 
+                            any(suffix in word.lower() for suffix in technical_indicators))
+        
+        return technical_terms / len(words)
+    
+    def _calculate_sentence_length_variance(self, sentences: List[str]) -> float:
+        """Calcola la varianza della lunghezza delle frasi"""
+        if len(sentences) < 2:
+            return 0.0
+        
+        sentence_lengths = [len(sentence.split()) for sentence in sentences]
+        mean_length = sum(sentence_lengths) / len(sentence_lengths)
+        variance = sum((length - mean_length) ** 2 for length in sentence_lengths) / len(sentence_lengths)
+        return variance
+    
+    def _calculate_connectors_ratio(self, words: List[str]) -> float:
+        """Calcola il rapporto di connettivi logici"""
+        connectors = {
+            'invece', 'tuttavia', 'pertanto', 'conseguentemente', 'quindi', 'dunque', 'dato che',
+            'poiché', 'perché', 'sebbene', 'benché', 'qualora', 'purché', 'mentre', 'durante',
+            'pertanto', 'infatti', 'ovviamente', 'certamente', 'indubbiamente', 'presumibilmente',
+            'd\'altro canto', 'altresì', 'peraltro', 'sicuramente', 'probabilmente', 'possibilmente'
+        }
+        
+        if not words:
+            return 0.0
+        
+        connector_count = sum(1 for word in words if word.lower() in connectors)
+        return connector_count / len(words)
+    
+    def _calculate_subordination_ratio(self, text: str) -> float:
+        """Calcola il rapporto di subordinazione (frasi complesse)"""
+        sentences = self.text_processor.split_sentences(text)
+        if not sentences:
+            return 0.0
+        
+        subordinate_indicators = [
+            'che', 'qualora', 'benché', 'sebbene', 'purché', 'affinché', 'perché', 'dato che',
+            'poiché', 'mentre', 'quando', 'se', 'qualora', 'qualora', 'nonostante', 'malgrado'
+        ]
+        
+        complex_sentences = 0
+        for sentence in sentences:
+            sentence_words = self.text_processor.tokenize(sentence)
+            subordinate_count = sum(1 for word in sentence_words if word.lower() in subordinate_indicators)
+            if subordinate_count > 0:
+                complex_sentences += 1
+        
+        return complex_sentences / len(sentences)
+    
+    def _empty_readability_features(self) -> Dict[str, float]:
+        return {key: 0.0 for key in [
+            'flesch_reading_ease', 'flesch_kincaid_grade', 'gunning_fog_index',
+            'automated_readability_index', 'coleman_liau_index', 'smog_index',
+            'avg_sentence_length', 'avg_syllables_per_word', 'long_sentences_ratio',
+            'very_long_sentences_ratio', 'short_sentences_ratio', 'complex_words_ratio',
+            'polysyllabic_words_ratio', 'technical_terms_ratio', 'paragraph_count',
+            'avg_sentence_length_variance', 'connectors_ratio', 'subordination_ratio'
+        ]}

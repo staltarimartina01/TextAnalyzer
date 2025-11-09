@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 AI vs Human Text Analyzer - Professional Edition
@@ -43,6 +44,7 @@ class TextAnalyzerApp:
             return
         
         print(f"🚀 Avvio {self.description} v{self.version}")
+        print("✨ CON SENTIMENT ANALYSIS + INDICE DI LEGGIBILITÀ")
         print("=" * 60)
         gui_main()
     
@@ -163,11 +165,72 @@ class TextAnalyzerApp:
             lexical = features.get('lexical', {})
             style = features.get('style', {})
             
-            print("\n🔍 Analisi Approfondita:")
-            print(f"  • Rapporto tipi/token: {lexical.get('type_token_ratio', 0):.3f}")
-            print(f"  • Consistenza stilistica: {style.get('stylistic_consistency', 0):.3f}")
-            print(f"  • Parole lunghe (>6): {lexical.get('long_words_ratio', 0):.1%}")
-            print(f"  • Ripetizione parole: {style.get('word_repetition_ratio', 0):.1%}")
+            print("\n🔍 ANALISI APPROFONDITA:")
+            
+            # Analisi lessicale e stilistica
+            print(f"  📚 Lessicale:")
+            print(f"    • Rapporto tipi/token: {lexical.get('type_token_ratio', 0):.3f}")
+            print(f"    • Diversità lessicale: {lexical.get('lexical_diversity', 0):.3f}")
+            print(f"    • Parole lunghe (>6): {lexical.get('long_words_ratio', 0):.1%}")
+            print(f"  🎨 Stilistica:")
+            print(f"    • Consistenza stilistica: {style.get('stylistic_consistency', 0):.3f}")
+            print(f"    • Ripetizione parole: {style.get('word_repetition_ratio', 0):.1%}")
+            
+            # Sentiment Analysis
+            sentiment = features.get('sentiment', {})
+            if sentiment:
+                print(f"  😊 SENTIMENT:")
+                net_sentiment = sentiment.get('net_sentiment_score', 0)
+                if net_sentiment > 0.1:
+                    sentiment_label = "POSITIVO"
+                elif net_sentiment < -0.1:
+                    sentiment_label = "NEGATIVO"
+                else:
+                    sentiment_label = "NEUTRALE"
+                
+                dominant_emotion = sentiment.get('dominant_emotion', 0.5)
+                if dominant_emotion > 0.7:
+                    emotion_text = "Gioia"
+                elif dominant_emotion > 0.4:
+                    emotion_text = "Sorpresa"
+                elif dominant_emotion > 0.2:
+                    emotion_text = "Rabbia"
+                elif dominant_emotion > 0.1:
+                    emotion_text = "Paura"
+                elif dominant_emotion > 0.05:
+                    emotion_text = "Tristezza"
+                else:
+                    emotion_text = "Neutro"
+                
+                print(f"    • Sentiment generale: {sentiment_label}")
+                print(f"    • Emozione dominante: {emotion_text}")
+                print(f"    • Intensità emotiva: {sentiment.get('sentiment_intensity', 0):.1%}")
+            
+            # Readability Analysis
+            readability = features.get('readability', {})
+            if readability:
+                print(f"  📖 LEGGIBILITÀ:")
+                flesch_score = readability.get('flesch_reading_ease', 0)
+                fk_grade = readability.get('flesch_kincaid_grade', 0)
+                
+                if flesch_score >= 90:
+                    readability_level = "Molto Facile"
+                elif flesch_score >= 80:
+                    readability_level = "Facile"
+                elif flesch_score >= 70:
+                    readability_level = "Abbastanza Facile"
+                elif flesch_score >= 60:
+                    readability_level = "Standard"
+                elif flesch_score >= 50:
+                    readability_level = "Abbastanza Difficile"
+                elif flesch_score >= 30:
+                    readability_level = "Difficile"
+                else:
+                    readability_level = "Molto Difficile"
+                
+                print(f"    • Livello: {readability_level} ({flesch_score:.1f}/100)")
+                print(f"    • Grade level: {fk_grade:.1f} (scuola)")
+                print(f"    • Parole complesse: {readability.get('complex_words_ratio', 0):.1%}")
     
     def _display_batch_summary(self, results: List[Dict[str, Any]]):
         """Mostra summary dell'analisi batch"""

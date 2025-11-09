@@ -671,8 +671,76 @@ class EnhancedTextAnalyzerGUI:
             ttk.Label(content_frame, text=f"Confidenza: {confidence}", 
                      style='Value.TLabel').pack(anchor=tk.W)
         
-        # Sezione Sentiment con Help
+        # Sezione Statistiche Testo (come V1)
+        text_stats = self.analysis_results.get('text_stats', {})
+        if text_stats:
+            stats_frame = ttk.LabelFrame(self.results_content, text="📊 Statistiche Testo")
+            stats_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            content_frame = ttk.Frame(stats_frame)
+            content_frame.pack(fill=tk.X, padx=15, pady=10)
+            
+            char_count = text_stats.get('char_count', 0)
+            word_count = text_stats.get('word_count', 0)
+            sentence_count = text_stats.get('sentence_count', 0)
+            lexical_diversity = text_stats.get('lexical_diversity', 0)
+            
+            ttk.Label(content_frame, text=f"Caratteri: {char_count:,}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Parole: {word_count:,}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Frasi: {sentence_count:,}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Diversità lessicale: {lexical_diversity:.3f}", style='Value.TLabel').pack(anchor=tk.W)
+        
+        # Sezione Lessicale (come V1)
         features = self.analysis_results.get('features', {})
+        lexical = features.get('lexical', {})
+        if lexical:
+            lexical_frame = ttk.LabelFrame(self.results_content, text="📚 Analisi Lessicale")
+            lexical_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            content_frame = ttk.Frame(lexical_frame)
+            content_frame.pack(fill=tk.X, padx=15, pady=10)
+            
+            type_token_ratio = lexical.get('type_token_ratio', 0)
+            lexical_diversity = lexical.get('lexical_diversity', 0)
+            long_words_ratio = lexical.get('long_words_ratio', 0)
+            
+            ttk.Label(content_frame, text=f"Rapporto tipi/token: {type_token_ratio:.3f}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Diversità lessicale: {lexical_diversity:.3f}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Parole lunghe (>6): {long_words_ratio:.1%}", style='Value.TLabel').pack(anchor=tk.W)
+        
+        # Sezione Stilistica (come V1)
+        style = features.get('style', {})
+        if style:
+            style_frame = ttk.LabelFrame(self.results_content, text="🎨 Analisi Stilistica")
+            style_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            content_frame = ttk.Frame(style_frame)
+            content_frame.pack(fill=tk.X, padx=15, pady=10)
+            
+            stylistic_consistency = style.get('stylistic_consistency', 0)
+            word_repetition_ratio = style.get('word_repetition_ratio', 0)
+            
+            ttk.Label(content_frame, text=f"Consistenza stilistica: {stylistic_consistency:.3f}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Ripetizione parole: {word_repetition_ratio:.1%}", style='Value.TLabel').pack(anchor=tk.W)
+        
+        # Sezione Sintattica (come V1)
+        syntactic = features.get('syntactic', {})
+        if syntactic:
+            syntactic_frame = ttk.LabelFrame(self.results_content, text="📝 Analisi Sintattica")
+            syntactic_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            content_frame = ttk.Frame(syntactic_frame)
+            content_frame.pack(fill=tk.X, padx=15, pady=10)
+            
+            avg_sentence_length = syntactic.get('avg_sentence_length', 0)
+            complex_sentences_ratio = syntactic.get('complex_sentences_ratio', 0)
+            punctuation_density = syntactic.get('punctuation_density', 0)
+            
+            ttk.Label(content_frame, text=f"Lunghezza media frase: {avg_sentence_length:.1f} parole", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Frasi complesse: {complex_sentences_ratio:.1%}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Densità punteggiatura: {punctuation_density:.1%}", style='Value.TLabel').pack(anchor=tk.W)
+        
+        # Sezione Sentiment con Help
         sentiment = features.get('sentiment', {})
         if sentiment:
             sentiment_frame = ttk.LabelFrame(self.results_content, text="😊 Analisi Sentiment")
@@ -685,7 +753,7 @@ class EnhancedTextAnalyzerGUI:
             ttk.Button(help_frame, text="?", style='Help.TButton',
                       command=lambda: self.show_metric_info('sentiment_analysis')).pack()
             
-            # Contenuto sentiment
+            # Contenuto sentiment completo
             content_frame = ttk.Frame(sentiment_frame)
             content_frame.pack(fill=tk.X, padx=15, pady=10)
             
@@ -700,11 +768,12 @@ class EnhancedTextAnalyzerGUI:
                 sentiment_label = "NEUTRALE"
                 sentiment_color = "⚪"
             
-            ttk.Label(content_frame, text=f"Sentiment: {sentiment_color} {sentiment_label}", 
-                     style='Metric.TLabel').pack(anchor=tk.W)
-            ttk.Label(content_frame, 
-                     text=f"Intensità: {sentiment.get('sentiment_intensity', 0):.1%}", 
-                     style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Sentiment generale: {sentiment_color} {sentiment_label}", style='Metric.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Emozione dominante: {self._get_emotion_text(sentiment.get('dominant_emotion', 0.5))}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Intensità emotiva: {sentiment.get('sentiment_intensity', 0):.1%}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Gioia: {sentiment.get('joy_indicators_ratio', 0):.1%}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Tristezza: {sentiment.get('sadness_indicators_ratio', 0):.1%}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Rabbia: {sentiment.get('anger_indicators_ratio', 0):.1%}", style='Value.TLabel').pack(anchor=tk.W)
         
         # Sezione Leggibilità con Help
         readability = features.get('readability', {})
@@ -719,17 +788,37 @@ class EnhancedTextAnalyzerGUI:
             ttk.Button(help_frame, text="?", style='Help.TButton',
                       command=lambda: self.show_metric_info('flesch_reading_ease')).pack()
             
-            # Contenuto leggibilità
+            # Contenuto leggibilità completo
             content_frame = ttk.Frame(readability_frame)
             content_frame.pack(fill=tk.X, padx=15, pady=10)
             
             flesch_score = readability.get('flesch_reading_ease', 0)
             fk_grade = readability.get('flesch_kincaid_grade', 0)
+            gunning_fog = readability.get('gunning_fog_index', 0)
+            smog_index = readability.get('smog_index', 0)
+            complex_words_ratio = readability.get('complex_words_ratio', 0)
             
-            ttk.Label(content_frame, text=f"Flesch Score: {flesch_score:.1f}/100", 
-                     style='Metric.TLabel').pack(anchor=tk.W)
-            ttk.Label(content_frame, text=f"Grade Level: {fk_grade:.1f}", 
-                     style='Value.TLabel').pack(anchor=tk.W)
+            # Determina il livello di leggibilità
+            if flesch_score >= 90:
+                readability_level = "Molto Facile"
+            elif flesch_score >= 80:
+                readability_level = "Facile"
+            elif flesch_score >= 70:
+                readability_level = "Abbastanza Facile"
+            elif flesch_score >= 60:
+                readability_level = "Standard"
+            elif flesch_score >= 50:
+                readability_level = "Abbastanza Difficile"
+            elif flesch_score >= 30:
+                readability_level = "Difficile"
+            else:
+                readability_level = "Molto Difficile"
+            
+            ttk.Label(content_frame, text=f"Livello: {readability_level} ({flesch_score:.1f}/100)", style='Metric.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Flesch-Kincaid Grade: {fk_grade:.1f} (scuola)", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Gunning Fog Index: {gunning_fog:.1f}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"SMOG Index: {smog_index:.1f}", style='Value.TLabel').pack(anchor=tk.W)
+            ttk.Label(content_frame, text=f"Parole complesse: {complex_words_ratio:.1%}", style='Value.TLabel').pack(anchor=tk.W)
         
         # Abilita esportazione
         self.root.after(0, lambda: self._enable_export())
@@ -778,6 +867,21 @@ class EnhancedTextAnalyzerGUI:
         if not self.current_file:
             self.analyze_btn.config(state='disabled')
     
+    def _get_emotion_text(self, dominant_emotion: float) -> str:
+        """Converte il valore numerico dell'emozione in testo"""
+        if dominant_emotion > 0.7:
+            return "Gioia"
+        elif dominant_emotion > 0.4:
+            return "Sorpresa"
+        elif dominant_emotion > 0.2:
+            return "Rabbia"
+        elif dominant_emotion > 0.1:
+            return "Paura"
+        elif dominant_emotion > 0.05:
+            return "Tristezza"
+        else:
+            return "Neutro"
+
     def update_status(self, message):
         """Aggiorna il messaggio di stato"""
         self.status_label.config(text=message)

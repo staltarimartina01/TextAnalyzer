@@ -25,9 +25,9 @@ class TextAnalyzerGUI:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("AI vs Human Text Analyzer - Professional Edition")
+        self.root.title("TextAnalyzer Professional - AI vs Human + Sentiment + Readability")
         self.root.geometry("1200x800")
-        self.root.configure(bg='#f0f0f0')
+        self.root.configure(bg='#F8F9FA')
         
         # Inizializza componenti
         self.analyzer = TextAnalyzer()
@@ -42,16 +42,65 @@ class TextAnalyzerGUI:
         self.setup_styles()
     
     def setup_styles(self):
-        """Configura stili per l'interfaccia"""
+        """Configura stili per l'interfaccia con tema moderno"""
         style = ttk.Style()
         style.theme_use('clam')
         
-        # Stili personalizzati
-        style.configure('Title.TLabel', font=('Arial', 16, 'bold'), background='#f0f0f0')
-        style.configure('Heading.TLabel', font=('Arial', 12, 'bold'), background='#f0f0f0')
-        style.configure('AI.TLabel', font=('Arial', 12, 'bold'), foreground='red', background='#f0f0f0')
-        style.configure('Human.TLabel', font=('Arial', 12, 'bold'), foreground='green', background='#f0f0f0')
-        style.configure('Confidence.TLabel', font=('Arial', 10), background='#f0f0f0')
+        # Colori moderni
+        modern_blue = '#2E86C1'
+        modern_green = '#28B463'
+        modern_red = '#E74C3C'
+        modern_orange = '#F39C12'
+        modern_purple = '#8E44AD'
+        background_color = '#F8F9FA'
+        text_color = '#2C3E50'
+        border_color = '#BDC3C7'
+        
+        # Configurazioni base per un aspetto più moderno
+        style.configure('TFrame', background=background_color, relief='flat')
+        style.configure('TLabel', background=background_color, foreground=text_color, 
+                       font=('Segoe UI', 9))
+        style.configure('TButton', font=('Segoe UI', 9), padding=(10, 5))
+        style.configure('TEntry', font=('Consolas', 9))
+        style.configure('TNotebook', tabposition='n', font=('Segoe UI', 9))
+        style.configure('TNotebook.Tab', padding=(15, 8), font=('Segoe UI', 9, 'bold'))
+        
+        # Stili personalizzati con colori moderni
+        style.configure('Title.TLabel', 
+                       font=('Segoe UI', 18, 'bold'), 
+                       background=background_color, 
+                       foreground=modern_blue)
+        
+        style.configure('Heading.TLabel', 
+                       font=('Segoe UI', 12, 'bold'), 
+                       background=background_color, 
+                       foreground=modern_purple)
+        
+        style.configure('AI.TLabel', 
+                       font=('Segoe UI', 12, 'bold'), 
+                       foreground=modern_red, 
+                       background=background_color)
+        
+        style.configure('Human.TLabel', 
+                       font=('Segoe UI', 12, 'bold'), 
+                       foreground=modern_green, 
+                       background=background_color)
+        
+        style.configure('Confidence.TLabel', 
+                       font=('Segoe UI', 10, 'italic'), 
+                       background=background_color, 
+                       foreground='#7F8C8D')
+        
+        style.configure('Modern.TLabelframe', 
+                       background=background_color, 
+                       borderwidth=1, 
+                       relief='solid',
+                       bordercolor=border_color)
+        
+        style.configure('Modern.TLabelframe.Label', 
+                       background=background_color, 
+                       foreground=modern_blue,
+                       font=('Segoe UI', 10, 'bold'))
     
     def setup_ui(self):
         """Configura l'interfaccia utente"""
@@ -80,7 +129,7 @@ class TextAnalyzerGUI:
     
     def setup_control_panel(self, parent):
         """Configura il pannello di controllo"""
-        control_frame = ttk.LabelFrame(parent, text="Controlli", padding="10")
+        control_frame = ttk.LabelFrame(parent, text="Controlli", padding="10", style='Modern.TLabelframe')
         control_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
         control_frame.columnconfigure(1, weight=1)
         
@@ -121,7 +170,7 @@ class TextAnalyzerGUI:
         self.results_notebook.add(self.text_frame, text="📄 Testo Originale")
         
         self.text_display = scrolledtext.ScrolledText(self.text_frame, wrap=tk.WORD, 
-                                                     font=('Arial', 10), height=15)
+                                                     font=('Consolas', 10), height=15)
         self.text_display.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Tab risultati analisi
@@ -163,12 +212,12 @@ class TextAnalyzerGUI:
         ttk.Label(parent, text="Confronti tra testi", style='Heading.TLabel').pack(pady=10)
         
         self.comparison_text = scrolledtext.ScrolledText(parent, wrap=tk.WORD, 
-                                                        font=('Arial', 10), height=15)
+                                                        font=('Consolas', 10), height=15)
         self.comparison_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
     
     def setup_status_panel(self, parent):
         """Configura il pannello di stato"""
-        status_frame = ttk.LabelFrame(parent, text="Stato", padding="5")
+        status_frame = ttk.LabelFrame(parent, text="Stato", padding="5", style='Modern.TLabelframe')
         status_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E))
         
         self.status_label = ttk.Label(status_frame, text="Pronto per l'analisi", 
@@ -286,7 +335,7 @@ class TextAnalyzerGUI:
         """
         
         ttk.Label(self.results_content, text=stats_text, 
-                 font=('Arial', 9), justify=tk.LEFT).pack(anchor=tk.W)
+                 font=('Segoe UI', 9), justify=tk.LEFT).pack(anchor=tk.W)
         
         # Features principali
         features = self.analysis_results.get('features', {})
@@ -308,7 +357,7 @@ class TextAnalyzerGUI:
             """
             
             ttk.Label(self.results_content, text=lex_text, 
-                     font=('Arial', 9), justify=tk.LEFT).pack(anchor=tk.W)
+                     font=('Segoe UI', 9), justify=tk.LEFT).pack(anchor=tk.W)
         
         # Features sintattiche
         if syntactic:
@@ -323,7 +372,7 @@ class TextAnalyzerGUI:
             """
             
             ttk.Label(self.results_content, text=synt_text, 
-                     font=('Arial', 9), justify=tk.LEFT).pack(anchor=tk.W)
+                     font=('Segoe UI', 9), justify=tk.LEFT).pack(anchor=tk.W)
         
         # Features stilistiche
         if style:
@@ -338,7 +387,101 @@ class TextAnalyzerGUI:
             """
             
             ttk.Label(self.results_content, text=style_text, 
-                     font=('Arial', 9), justify=tk.LEFT).pack(anchor=tk.W)
+                     font=('Segoe UI', 9), justify=tk.LEFT).pack(anchor=tk.W)
+        
+        # Sentiment Analysis
+        sentiment = features.get('sentiment', {})
+        if sentiment:
+            ttk.Label(self.results_content, text="😊 ANALISI SENTIMENT:", 
+                     style='Heading.TLabel').pack(anchor=tk.W, pady=(15, 5))
+            
+            # Determina l'etichetta del sentiment
+            net_sentiment = sentiment.get('net_sentiment_score', 0)
+            if net_sentiment > 0.1:
+                sentiment_label = "POSITIVO"
+                sentiment_color = "🟢"
+            elif net_sentiment < -0.1:
+                sentiment_label = "NEGATIVO"
+                sentiment_color = "🔴"
+            else:
+                sentiment_label = "NEUTRALE"
+                sentiment_color = "⚪"
+            
+            dominant_emotion = sentiment.get('dominant_emotion', 0.5)
+            if dominant_emotion > 0.7:
+                emotion_text = "Gioia"
+            elif dominant_emotion > 0.4:
+                emotion_text = "Sorpresa"
+            elif dominant_emotion > 0.2:
+                emotion_text = "Rabbia"
+            elif dominant_emotion > 0.1:
+                emotion_text = "Paura"
+            elif dominant_emotion > 0.05:
+                emotion_text = "Tristezza"
+            else:
+                emotion_text = "Neutro"
+            
+            sentiment_text = f"""
+• Sentiment generale: {sentiment_color} {sentiment_label}
+• Emozione dominante: {emotion_text}
+• Intensità emotiva: {sentiment.get('sentiment_intensity', 0):.1%}
+• Chiarezza emotiva: {sentiment.get('emotional_clarity', 0):.1%}
+• Consistenza emotiva: {sentiment.get('emotional_consistency', 0):.1%}
+• Gioia: {sentiment.get('joy_indicators_ratio', 0):.1%}
+• Tristezza: {sentiment.get('sadness_indicators_ratio', 0):.1%}
+• Rabbia: {sentiment.get('anger_indicators_ratio', 0):.1%}
+            """
+            
+            ttk.Label(self.results_content, text=sentiment_text, 
+                     font=('Segoe UI', 9), justify=tk.LEFT).pack(anchor=tk.W)
+        
+        # Readability Analysis
+        readability = features.get('readability', {})
+        if readability:
+            ttk.Label(self.results_content, text="📖 INDICE DI LEGGIBILITÀ:", 
+                     style='Heading.TLabel').pack(anchor=tk.W, pady=(15, 5))
+            
+            # Determina il livello di leggibilità
+            flesch_score = readability.get('flesch_reading_ease', 0)
+            if flesch_score >= 90:
+                readability_level = "Molto Facile"
+                readability_color = "🟢"
+            elif flesch_score >= 80:
+                readability_level = "Facile"
+                readability_color = "🟡"
+            elif flesch_score >= 70:
+                readability_level = "Abbastanza Facile"
+                readability_color = "🟡"
+            elif flesch_score >= 60:
+                readability_level = "Standard"
+                readability_color = "🟠"
+            elif flesch_score >= 50:
+                readability_level = "Abbastanza Difficile"
+                readability_color = "🟠"
+            elif flesch_score >= 30:
+                readability_level = "Difficile"
+                readability_color = "🔴"
+            else:
+                readability_level = "Molto Difficile"
+                readability_color = "🔴"
+            
+            fk_grade = readability.get('flesch_kincaid_grade', 0)
+            gunning_fog = readability.get('gunning_fog_index', 0)
+            
+            readability_text = f"""
+• Livello di leggibilità: {readability_color} {readability_level}
+• Flesch Reading Ease: {flesch_score:.1f}/100
+• Flesch-Kincaid Grade: {fk_grade:.1f} (scuola)
+• Gunning Fog Index: {gunning_fog:.1f}
+• SMOG Index: {readability.get('smog_index', 0):.1f}
+• Lunghezza media frase: {readability.get('avg_sentence_length', 0):.1f} parole
+• Parole complesse: {readability.get('complex_words_ratio', 0):.1%}
+• Parole polisillabiche: {readability.get('polysyllabic_words_ratio', 0):.1%}
+• Termini tecnici: {readability.get('technical_terms_ratio', 0):.1%}
+            """
+            
+            ttk.Label(self.results_content, text=readability_text, 
+                     font=('Segoe UI', 9), justify=tk.LEFT).pack(anchor=tk.W)
         
         # Spiegazione del risultato
         ttk.Label(self.results_content, text="💡 SPIEGAZIONE:", 
@@ -346,7 +489,7 @@ class TextAnalyzerGUI:
         
         explanation = self._generate_explanation(prediction, confidence, features)
         ttk.Label(self.results_content, text=explanation, 
-                 font=('Arial', 9), justify=tk.LEFT, wraplength=800).pack(anchor=tk.W)
+                 font=('Segoe UI', 9), justify=tk.LEFT, wraplength=800).pack(anchor=tk.W)
         
         # Abilita esportazione
         self.root.after(0, lambda: self._enable_export())
@@ -359,6 +502,9 @@ class TextAnalyzerGUI:
     
     def _generate_explanation(self, prediction: str, confidence: float, features: Dict) -> str:
         """Genera spiegazione del risultato"""
+        explanation_parts = []
+        
+        # Spiegazione della classificazione principale
         if prediction == 'AI':
             reasons = []
             lexical = features.get('lexical', {})
@@ -369,13 +515,9 @@ class TextAnalyzerGUI:
             if style.get('stylistic_consistency', 1) < 0.4:
                 reasons.append("bassa consistenza stilistica")
             
-            explanation = f"""
-Il testo è stato classificato come GENERATO DA INTELLIGENZA ARTIFICIALE 
-con una confidenza del {confidence:.1%}. 
-Indicazioni principali: {', '.join(reasons) if reasons else 'pattern linguistici complessi'}.
-I sistemi AI tendono a produrre testi con strutture più regolari, 
-vocabolario vario e pattern sintattici più uniformi.
-            """
+            explanation_parts.append(f"Classificazione: GENERATO DA INTELLIGENZA ARTIFICIALE (confidenza: {confidence:.1%})")
+            explanation_parts.append(f"Indicazioni principali: {', '.join(reasons) if reasons else 'pattern linguistici complessi'}")
+            explanation_parts.append("I sistemi AI tendono a produrre testi con strutture più regolari, vocabolario vario e pattern sintattici più uniformi.")
         else:
             reasons = []
             style = features.get('style', {})
@@ -385,15 +527,67 @@ vocabolario vario e pattern sintattici più uniformi.
             if style.get('word_repetition_ratio', 0) > 0.3:
                 reasons.append("ripetizioni naturali di parole")
             
-            explanation = f"""
-Il testo è stato classificato come SCRITTO DA UN ESSERE UMANO 
-con una confidenza del {confidence:.1%}.
-Indicazioni principali: {', '.join(reasons) if reasons else 'variazioni naturali nello stile'}.
-I testi umani mostrano più variabilità, ripetizioni naturali e 
-meno struttura regolare rispetto ai testi generati da AI.
-            """
+            explanation_parts.append(f"Classificazione: SCRITTO DA UN ESSERE UMANO (confidenza: {confidence:.1%})")
+            explanation_parts.append(f"Indicazioni principali: {', '.join(reasons) if reasons else 'variazioni naturali nello stile'}")
+            explanation_parts.append("I testi umani mostrano più variabilità, ripetizioni naturali e meno struttura regolare rispetto ai testi generati da AI.")
         
-        return explanation.strip()
+        # Analisi del sentiment
+        sentiment = features.get('sentiment', {})
+        if sentiment:
+            net_sentiment = sentiment.get('net_sentiment_score', 0)
+            if net_sentiment > 0.1:
+                sentiment_desc = "positivo"
+            elif net_sentiment < -0.1:
+                sentiment_desc = "negativo"
+            else:
+                sentiment_desc = "neutrale"
+            
+            explanation_parts.append(f"Analisi del sentiment: il testo presenta un tono {sentiment_desc}")
+            
+            dominant_emotion = sentiment.get('dominant_emotion', 0.5)
+            if dominant_emotion > 0.7:
+                emotion_text = "gioia"
+            elif dominant_emotion > 0.4:
+                emotion_text = "sorpresa"
+            elif dominant_emotion > 0.2:
+                emotion_text = "rabbia"
+            elif dominant_emotion > 0.1:
+                emotion_text = "paura"
+            elif dominant_emotion > 0.05:
+                emotion_text = "tristezza"
+            else:
+                emotion_text = "neutro"
+            
+            explanation_parts.append(f"Emozione dominante: {emotion_text}")
+        
+        # Analisi della leggibilità
+        readability = features.get('readability', {})
+        if readability:
+            flesch_score = readability.get('flesch_reading_ease', 0)
+            if flesch_score >= 90:
+                readability_level = "molto facile"
+            elif flesch_score >= 80:
+                readability_level = "facile"
+            elif flesch_score >= 70:
+                readability_level = "abbastanza facile"
+            elif flesch_score >= 60:
+                readability_level = "standard"
+            elif flesch_score >= 50:
+                readability_level = "abbastanza difficile"
+            elif flesch_score >= 30:
+                readability_level = "difficile"
+            else:
+                readability_level = "molto difficile"
+            
+            explanation_parts.append(f"Livello di leggibilità: {readability_level} (Flesch: {flesch_score:.1f}/100)")
+            
+            fk_grade = readability.get('flesch_kincaid_grade', 0)
+            explanation_parts.append(f"Niveau scolastico stimato: {fk_grade:.1f} classe")
+        
+        # Ricapitola
+        explanation_parts.append("Questa analisi combina classificazione AI/umano con valutazione emotiva e leggibilità per un quadro completo del testo.")
+        
+        return "\n\n".join(explanation_parts)
     
     def batch_analyze(self):
         """Esegue analisi batch su una directory"""
