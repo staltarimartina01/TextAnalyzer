@@ -1,0 +1,80 @@
+{
+  "text_info": {
+    "word_count": 35,
+    "character_count": 298,
+    "sentence_count": 4
+  },
+  "metriche_lessicali": {
+    "ttr_base": 0.972,
+    "ttr_variation": 0.014,
+    "burstiness": -0.718,
+    "densita_lessicale": 0.667,
+    "parole_uniche": 35,
+    "frequenza_media_parole": 1.03,
+    "complessita_lessicale": 0.556,
+    "ricchezza_vocabulario": 0.972,
+    "categorie_parole": {
+      "nouns": 3,
+      "verbs": 2,
+      "adjectives": 3,
+      "adverbs": 2,
+      "prepositions": 3,
+      "determinants": 3,
+      "other": 20
+    }
+  },
+  "metriche_sintattiche": {
+    "numero_frasi": 4,
+    "lunghezza_media_frasi": 9,
+    "deviazione_standard_frasi": 1.41,
+    "variabilita_lunghezza": 0.157,
+    "pattern_ripetitivi": 0.0,
+    "percentuale_frasi_complesse": 0.0,
+    "variazione_punteggiatura": 1
+  },
+  "metriche_semantiche": {
+    "sentiment_polarity": 0.092,
+    "sentiment_subjectivity": 0.596,
+    "sentiment_label": "neutral",
+    "vader_compound": 0.938,
+    "vader_positive": 0.363,
+    "vader_negative": 0.0,
+    "vader_neutral": 0.637,
+    "coerenza_tematica": 0.0,
+    "transizioni_emotive": 0.133,
+    "volatilita_emotiva": 0.06
+  },
+  "metriche_stilistiche": {
+    "figure_retoriche": {
+      "similitudini": 0,
+      "metafore": 1,
+      "totale_figure": 1
+    },
+    "connettivi_logici": {
+      "count": 1,
+      "tipi": [
+        "however"
+      ]
+    },
+    "originalita_linguistica": {
+      "indicatori_informali": 0,
+      "punteggiatura_eccessiva": 0,
+      "uso_parentesi": 0,
+      "maiuscolo_eccessivo": 0
+    },
+    "coesione_testuale": {
+      "device_count": 0,
+      "coesione_score": 0.0
+    },
+    "strutture_ripetitive": {
+      "ripetizioni_consecutive": 0,
+      "inizi_frasi_simil": 0
+    }
+  },
+  "ai_detection_score": {
+    "ai_probability": 1.0,
+    "human_probability": 0.0,
+    "confidence": 0.6,
+    "classification": "Probabilmente AI"
+  }
+}

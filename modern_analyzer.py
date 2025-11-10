@@ -23,6 +23,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.analyzer import TextAnalyzer
 from features.feature_extractor import FeatureExtractor
+from advanced_analyzer import AdvancedTextAnalyzer
 
 class MetricInfoDialog(QDialog):
     """Finestra moderna per mostrare informazioni sulle metriche"""
@@ -119,9 +120,10 @@ class ModernTextAnalyzer(QMainWindow):
         self.setMinimumSize(1200, 800)
         self.resize(1400, 900)
         
-        # Inizializza analizzatore
+        # Inizializza analizzatori
         self.analyzer = TextAnalyzer()
         self.feature_extractor = FeatureExtractor()
+        self.advanced_analyzer = AdvancedTextAnalyzer()
         
         # Variabili di stato
         self.current_file = None
@@ -260,12 +262,31 @@ Questa metrica è efficace per testi di media lunghezza."""
             }
             QPushButton:hover {
                 background-color: #0056b3;
+            }""")
+        
+        # Pulsante per analisi avanzata
+        self.advanced_analyze_btn = QPushButton("🧠 Analisi Avanzata")
+        self.advanced_analyze_btn.clicked.connect(self.analyze_advanced)
+        self.advanced_analyze_btn.setEnabled(False)
+        self.advanced_analyze_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #6f42c1;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #5a32a3;
             }
             QPushButton:disabled {
                 background-color: #6c757d;
             }
         """)
         header_layout.addWidget(self.analyze_btn)
+        header_layout.addWidget(self.advanced_analyze_btn)
         
         self.batch_btn = QPushButton("📊 Analisi Batch")
         self.batch_btn.setStyleSheet("""
@@ -530,6 +551,7 @@ Questa metrica è efficace per testi di media lunghezza."""
                 
                 # Abilita analisi
                 self.analyze_btn.setEnabled(True)
+                self.advanced_analyze_btn.setEnabled(True)
                 
                 # Esegui analisi automatica
                 self.status_bar.showMessage("File caricato, eseguo analisi automatica...")
@@ -597,6 +619,308 @@ Questa metrica è efficace per testi di media lunghezza."""
         except Exception as e:
             QMessageBox.critical(self, "Errore", f"Errore durante l'analisi:\n{str(e)}")
             self.status_bar.showMessage("Errore durante l'analisi")
+    
+    def analyze_advanced(self):
+        """Analizza il testo con il sistema avanzato di metriche"""
+        if not self.current_file:
+            QMessageBox.warning(self, "Attenzione", "Nessun file da analizzare")
+            return
+        try:
+            # Leggi il testo
+            with open(self.current_file, 'r', encoding='utf-8') as f:
+                text = f.read()
+            self.status_bar.showMessage("Analisi avanzata in corso...")
+            QApplication.processEvents()
+            # Esegui analisi avanzata completa
+            advanced_result = self.advanced_analyzer.analyze_text(text)
+            if 'error' in advanced_result:
+                QMessageBox.critical(self, "Errore", f"Errore nell'analisi avanzata:\n{advanced_result['error']}")
+                self.status_bar.showMessage("Errore nell'analisi avanzata")
+                return
+            
+            # Visualizza risultati avanzati in una dialog
+            self.display_advanced_results(advanced_result)
+            
+            # Salva i risultati in un file JSON
+            import json
+            filename = f"advanced_analysis_{os.path.splitext(os.path.basename(self.current_file))[0]}.json"
+            try:
+                with open(filename, 'w', encoding='utf-8') as f:
+                    json.dump(advanced_result, f, indent=2, ensure_ascii=False)
+                self.status_bar.showMessage(f"Analisi completata! Risultati salvati in: {filename}")
+            except Exception as e:
+                self.status_bar.showMessage(f"Analisi completata, ma errore nel salvataggio: {str(e)}")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Errore", f"Errore durante l'analisi avanzata:\n{str(e)}")
+            self.status_bar.showMessage("Errore durante l'analisi avanzata")
+    
+    def display_advanced_results(self, results: Dict):
+        """Visualizza i risultati dell'analisi avanzata in una dialog moderna"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("🧠 Analisi Avanzata - Risultati Completi")
+        dialog.setMinimumSize(1000, 700)
+        dialog.setModal(True)
+        
+        # Layout principale
+        layout = QVBoxLayout(dialog)
+        
+        # Titolo principale
+        title = QLabel("📊 Analisi Testuale Avanzata per Tesi LLM vs Autore Umano")
+        title.setStyleSheet("""
+            font-size: 18px;
+            font-weight: bold;
+            color: #2e86c1;
+            padding: 10px;
+            text-align: center;
+        """)
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        
+        # Scroll area per i risultati
+        scroll = QScrollArea()
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
+        
+        # Sezione AI Detection Score (più importante)
+        if 'ai_detection_score' in results:
+            self.create_ai_score_section(scroll_layout, results['ai_detection_score'])
+        
+        # Sezione Metriche Lessicali
+        if 'metriche_lessicali' in results:
+            self.create_lexical_metrics_section(scroll_layout, results['metriche_lessicali'])
+        
+        # Sezione Metriche Sintattiche
+        if 'metriche_sintattiche' in results:
+            self.create_syntactic_metrics_section(scroll_layout, results['metriche_sintattiche'])
+        
+        # Sezione Metriche Semantiche
+        if 'metriche_semantiche' in results:
+            self.create_semantic_metrics_section(scroll_layout, results['metriche_semantiche'])
+        
+        # Sezione Metriche Stilistiche
+        if 'metriche_stilistiche' in results:
+            self.create_stylistic_metrics_section(scroll_layout, results['metriche_stilistiche'])
+        
+        # Sezione Informazioni Testo
+        if 'text_info' in results:
+            self.create_text_info_section(scroll_layout, results['text_info'])
+        
+        scroll.setWidget(scroll_widget)
+        layout.addWidget(scroll)
+        
+        # Pulsanti di chiusura
+        button_layout = QHBoxLayout()
+        close_btn = QPushButton("Chiudi")
+        close_btn.clicked.connect(dialog.accept)
+        button_layout.addStretch()
+        button_layout.addWidget(close_btn)
+        layout.addLayout(button_layout)
+        
+        # Stile della dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #f8f9fa;
+            }
+            QScrollArea {
+                border: 1px solid #dee2e6;
+                border-radius: 6px;
+                background-color: white;
+            }
+            QPushButton {
+                background-color: #6f42c1;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #5a32a3;
+            }
+        """)
+        
+        dialog.exec()
+    
+    def create_ai_score_section(self, parent_layout, ai_score):
+        """Crea sezione punteggio AI detection"""
+        group = QGroupBox("🧠 Probabilità AI vs Umano")
+        group.setStyleSheet("""
+            QGroupBox {
+                font-size: 16px;
+                font-weight: bold;
+                color: #2e86c1;
+                border: 2px solid #2e86c1;
+                border-radius: 6px;
+                margin: 5px;
+                padding-top: 10px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }
+        """)
+        layout = QVBoxLayout(group)
+        
+        # Classificazione principale
+        classification = ai_score.get('classification', 'Sconosciuto')
+        prob_ai = ai_score.get('ai_probability', 0) * 100
+        prob_human = ai_score.get('human_probability', 0) * 100
+        confidence = ai_score.get('confidence', 0) * 100
+        
+        result_text = f"""
+🎯 Classificazione: {classification}
+🤖 Probabilità AI: {prob_ai:.1f}%
+👤 Probabilità Umano: {prob_human:.1f}%
+📊 Confidenza: {confidence:.1f}%
+        """.strip()
+        
+        result_label = QLabel(result_text)
+        result_label.setStyleSheet("""
+            font-size: 14px;
+            color: #000000;
+            padding: 10px;
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        """)
+        layout.addWidget(result_label)
+        parent_layout.addWidget(group)
+    
+    def create_lexical_metrics_section(self, parent_layout, metrics):
+        """Crea sezione metriche lessicali"""
+        group = QGroupBox("📝 Metriche Lessicali")
+        group.setStyleSheet(self._get_group_style("#28a745"))
+        layout = QVBoxLayout(group)
+        
+        metrics_text = f"""
+🔤 Type-Token Ratio Base: {metrics.get('ttr_base', 0):.3f}
+📈 TTR Variazione: {metrics.get('ttr_variation', 0):.3f}
+⚡ Burstiness: {metrics.get('burstiness', 0):.3f}
+🧠 Densità Lessicale: {metrics.get('densita_lessicale', 0):.3f}
+📚 Parole Uniche: {metrics.get('parole_uniche', 0)}
+🔢 Frequenza Media: {metrics.get('frequenza_media_parole', 0):.2f}
+🎯 Complessità Lessicale: {metrics.get('complessita_lessicale', 0):.3f}
+💎 Ricchezza Vocabolario: {metrics.get('ricchezza_vocabulario', 0):.3f}
+        """.strip()
+        
+        label = QLabel(metrics_text)
+        label.setStyleSheet("font-size: 12px; color: #000000; padding: 5px;")
+        layout.addWidget(label)
+        parent_layout.addWidget(group)
+    
+    def create_syntactic_metrics_section(self, parent_layout, metrics):
+        """Crea sezione metriche sintattiche"""
+        group = QGroupBox("🔧 Metriche Sintattiche")
+        group.setStyleSheet(self._get_group_style("#fd7e14"))
+        layout = QVBoxLayout(group)
+        
+        metrics_text = f"""
+📊 Numero Frasi: {metrics.get('numero_frasi', 0)}
+📏 Lunghezza Media Frasi: {metrics.get('lunghezza_media_frasi', 0):.1f} parole
+📈 Deviazione Standard: {metrics.get('deviazione_standard_frasi', 0):.2f}
+🎯 Variabilità Lunghezza: {metrics.get('variabilita_lunghezza', 0):.3f}
+🔄 Pattern Ripetitivi: {metrics.get('pattern_ripetitivi', 0):.4f}
+🏗️ Frasi Complesse: {metrics.get('percentuale_frasi_compless e', 0):.1f}%
+        """.strip()
+        
+        label = QLabel(metrics_text)
+        label.setStyleSheet("font-size: 12px; color: #000000; padding: 5px;")
+        layout.addWidget(label)
+        parent_layout.addWidget(group)
+    
+    def create_semantic_metrics_section(self, parent_layout, metrics):
+        """Crea sezione metriche semantiche"""
+        group = QGroupBox("💭 Metriche Semantiche")
+        group.setStyleSheet(self._get_group_style("#6f42c1"))
+        layout = QVBoxLayout(group)
+        
+        sentiment_text = f"""
+😊 Sentiment Polarity: {metrics.get('sentiment_polarity', 0):.3f}
+🎭 Subjectivity: {metrics.get('sentiment_subjectivity', 0):.3f}
+🏷️ Sentiment Label: {metrics.get('sentiment_label', 'Unknown')}
+        """.strip()
+        
+        if 'vader_compound' in metrics:
+            sentiment_text += f"""
+
+⚡ VADER Compound: {metrics.get('vader_compound', 0):.3f}
+➕ VADER Positive: {metrics.get('vader_positive', 0):.3f}
+➖ VADER Negative: {metrics.get('vader_negative', 0):.3f}
+➖ VADER Neutral: {metrics.get('vader_neutral', 0):.3f}
+        """
+        
+        if 'coerenza_tematica' in metrics:
+            sentiment_text += f"""
+
+🔗 Coerenza Tematica: {metrics.get('coerenza_tematica', 0):.3f}
+📊 Transizioni Emotive: {metrics.get('transizioni_emotive', 0):.3f}
+        """
+        
+        label = QLabel(sentiment_text)
+        label.setStyleSheet("font-size: 12px; color: #000000; padding: 5px;")
+        layout.addWidget(label)
+        parent_layout.addWidget(group)
+    
+    def create_stylistic_metrics_section(self, parent_layout, metrics):
+        """Crea sezione metriche stilistiche"""
+        group = QGroupBox("🎨 Metriche Stilistiche")
+        group.setStyleSheet(self._get_group_style("#e83e8c"))
+        layout = QVBoxLayout(group)
+        
+        figures = metrics.get('figure_retoriche', {})
+        connectives = metrics.get('connettivi_logici', {})
+        originality = metrics.get('originalita_linguistica', {})
+        
+        stylistic_text = f"""
+🎭 Similitudini: {figures.get('similitudini', 0)}
+🌟 Metafore: {figures.get('metafore', 0)}
+📊 Totale Figure: {figures.get('totale_figure', 0)}
+        
+🔗 Connettivi Logici: {connectives.get('count', 0)}
+        """
+        
+        label = QLabel(stylistic_text)
+        label.setStyleSheet("font-size: 12px; color: #000000; padding: 5px;")
+        layout.addWidget(label)
+        parent_layout.addWidget(group)
+    
+    def create_text_info_section(self, parent_layout, text_info):
+        """Crea sezione informazioni testo"""
+        group = QGroupBox("📄 Informazioni Testo")
+        group.setStyleSheet(self._get_group_style("#6c757d"))
+        layout = QVBoxLayout(group)
+        
+        info_text = f"""
+📝 Parole: {text_info.get('word_count', 0)}
+📏 Caratteri: {text_info.get('character_count', 0)}
+📖 Frasi: {text_info.get('sentence_count', 0)}
+        """
+        
+        label = QLabel(info_text)
+        label.setStyleSheet("font-size: 12px; color: #000000; padding: 5px;")
+        layout.addWidget(label)
+        parent_layout.addWidget(group)
+    
+    def _get_group_style(self, color):
+        """Stile uniforme per i gruppi"""
+        return f"""
+            QGroupBox {{
+                font-size: 14px;
+                font-weight: bold;
+                color: {color};
+                border: 2px solid {color};
+                border-radius: 6px;
+                margin: 5px;
+                padding-top: 10px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }}
+        """
     
     def display_analysis_results(self, result: Dict, sentence_variance: Dict):
         """Visualizza i risultati dell'analisi in formato moderno"""
