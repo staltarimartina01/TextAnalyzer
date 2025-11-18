@@ -24,6 +24,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.analyzer import TextAnalyzer
 from features.feature_extractor import FeatureExtractor
 from advanced_analyzer import AdvancedTextAnalyzer
+from advanced_text_analyzer import AdvancedTextAnalyzerSystem
 
 class MetricInfoDialog(QDialog):
     """Finestra moderna per mostrare informazioni sulle metriche"""
@@ -124,10 +125,12 @@ class ModernTextAnalyzer(QMainWindow):
         self.analyzer = TextAnalyzer()
         self.feature_extractor = FeatureExtractor()
         self.advanced_analyzer = AdvancedTextAnalyzer()
-        
+        self.advanced_system = None  # Inizializzato on-demand
+
         # Variabili di stato
         self.current_file = None
         self.analysis_results = None
+        self.use_advanced_system = True  # Flag per usare sistema avanzato
         
         # Dizionario di spiegazioni metriche
         self.metric_explanations = {
@@ -621,126 +624,258 @@ Questa metrica è efficace per testi di media lunghezza."""
             self.status_bar.showMessage("Errore durante l'analisi")
     
     def analyze_advanced(self):
-        """Analizza il testo con il sistema avanzato di metriche"""
-        if not self.current_file:
-            QMessageBox.warning(self, "Attenzione", "Nessun file da analizzare")
-            return
+        """Analizza il testo con il sistema avanzato ensemble + calibration"""
         try:
-            # Leggi il testo
-            with open(self.current_file, 'r', encoding='utf-8') as f:
-                text = f.read()
-            self.status_bar.showMessage("Analisi avanzata in corso...")
+            # Prendi testo dall'input o dal file
+            if self.current_file:
+                with open(self.current_file, 'r', encoding='utf-8') as f:
+                    text = f.read()
+            else:
+                text = self.text_input.toPlainText().strip()
+                if not text:
+                    QMessageBox.warning(self, "Attenzione", "Inserisci del testo da analizzare")
+                    return
+
+            self.status_bar.showMessage("Inizializzazione sistema avanzato...")
             QApplication.processEvents()
-            # Esegui analisi avanzata completa
-            advanced_result = self.advanced_analyzer.analyze_text(text)
-            if 'error' in advanced_result:
-                QMessageBox.critical(self, "Errore", f"Errore nell'analisi avanzata:\n{advanced_result['error']}")
-                self.status_bar.showMessage("Errore nell'analisi avanzata")
+
+            # Inizializza sistema avanzato (senza auto-calibrazione per velocità)
+            if self.advanced_system is None:
+                self.advanced_system = AdvancedTextAnalyzerSystem(auto_calibrate=False)
+
+            self.status_bar.showMessage("Analisi ensemble in corso... (5 analizzatori specializzati)")
+            QApplication.processEvents()
+
+            # Esegui analisi avanzata
+            result = self.advanced_system.analyze_text(text)
+
+            if 'error' in result:
+                QMessageBox.critical(self, "Errore", f"Errore nell'analisi:\n{result['error']}")
+                self.status_bar.showMessage("Errore nell'analisi")
                 return
-            
+
             # Visualizza risultati avanzati in una dialog
-            self.display_advanced_results(advanced_result)
-            
-            # Salva i risultati in un file JSON
+            self.display_advanced_results(result)
+
+            # Salva i risultati
             import json
-            filename = f"advanced_analysis_{os.path.splitext(os.path.basename(self.current_file))[0]}.json"
+            filename = f"ensemble_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             try:
                 with open(filename, 'w', encoding='utf-8') as f:
-                    json.dump(advanced_result, f, indent=2, ensure_ascii=False)
-                self.status_bar.showMessage(f"Analisi completata! Risultati salvati in: {filename}")
+                    json.dump(result, f, indent=2, ensure_ascii=False, default=str)
+                self.status_bar.showMessage(f"✅ Analisi completata! Risultati salvati: {filename}")
             except Exception as e:
-                self.status_bar.showMessage(f"Analisi completata, ma errore nel salvataggio: {str(e)}")
-            
+                self.status_bar.showMessage(f"Analisi completata, errore salvataggio: {str(e)}")
+
         except Exception as e:
-            QMessageBox.critical(self, "Errore", f"Errore durante l'analisi avanzata:\n{str(e)}")
-            self.status_bar.showMessage("Errore durante l'analisi avanzata")
+            QMessageBox.critical(self, "Errore", f"Errore durante l'analisi:\n{str(e)}")
+            self.status_bar.showMessage("Errore durante l'analisi")
     
     def display_advanced_results(self, results: Dict):
-        """Visualizza i risultati dell'analisi avanzata in una dialog moderna"""
+        """Visualizza i risultati dell'analisi ensemble avanzata"""
         dialog = QDialog(self)
-        dialog.setWindowTitle("🧠 Analisi Avanzata - Risultati Completi")
-        dialog.setMinimumSize(1000, 700)
+        dialog.setWindowTitle("🧠 Ensemble Analysis - Sistema Avanzato")
+        dialog.setMinimumSize(1100, 750)
         dialog.setModal(True)
-        
+
         # Layout principale
         layout = QVBoxLayout(dialog)
-        
-        # Titolo principale
-        title = QLabel("📊 Analisi Testuale Avanzata per Tesi LLM vs Autore Umano")
+
+        # Titolo
+        title = QLabel("🎯 Ensemble Text Analyzer - Sistema Calibrato")
         title.setStyleSheet("""
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #2e86c1;
-            padding: 10px;
+            padding: 15px;
             text-align: center;
         """)
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
-        
-        # Scroll area per i risultati
+
+        # Scroll area
         scroll = QScrollArea()
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout(scroll_widget)
-        
-        # Sezione AI Detection Score (più importante)
-        if 'ai_detection_score' in results:
-            self.create_ai_score_section(scroll_layout, results['ai_detection_score'])
-        
-        # Sezione Metriche Lessicali
-        if 'metriche_lessicali' in results:
-            self.create_lexical_metrics_section(scroll_layout, results['metriche_lessicali'])
-        
-        # Sezione Metriche Sintattiche
-        if 'metriche_sintattiche' in results:
-            self.create_syntactic_metrics_section(scroll_layout, results['metriche_sintattiche'])
-        
-        # Sezione Metriche Semantiche
-        if 'metriche_semantiche' in results:
-            self.create_semantic_metrics_section(scroll_layout, results['metriche_semantiche'])
-        
-        # Sezione Metriche Stilistiche
-        if 'metriche_stilistiche' in results:
-            self.create_stylistic_metrics_section(scroll_layout, results['metriche_stilistiche'])
-        
-        # Sezione Informazioni Testo
-        if 'text_info' in results:
-            self.create_text_info_section(scroll_layout, results['text_info'])
-        
+
+        # 1. SEZIONE PRINCIPALE - ENSEMBLE RESULT
+        ensemble_result = results.get('ensemble_analysis', {}).get('ensemble_result', {})
+        classification = ensemble_result.get('classification', 'N/A')
+        ai_prob = ensemble_result.get('ai_probability', 0)
+        human_prob = ensemble_result.get('human_probability', 0)
+        agreement = ensemble_result.get('agreement_score', 0)
+
+        self.create_section_card(
+            scroll_layout,
+            "🧠 CLASSIFICAZIONE ENSEMBLE",
+            f"""🎯 Classificazione: {classification}
+🤖 Probabilità AI: {ai_prob:.4f}
+👤 Probabilità Umano: {human_prob:.4f}
+📊 Agreement Score: {agreement:.3f}""",
+            "#2e86c1", "#e7f3ff"
+        )
+
+        # 2. CONFIDENCE ANALYSIS
+        confidence = results.get('confidence_analysis', {})
+        certainty = confidence.get('prediction_certainty', 0)
+        certainty_level = confidence.get('certainty_level', 'N/A')
+        recommendation = confidence.get('recommendation', 'N/A')
+
+        self.create_section_card(
+            scroll_layout,
+            "🎯 CONFIDENCE METRICS",
+            f"""✨ Prediction Certainty: {certainty:.4f}
+📈 Certainty Level: {certainty_level}
+💡 Recommendation: {recommendation}""",
+            "#28a745", "#e8f5e9"
+        )
+
+        # 3. INDIVIDUAL ANALYZERS
+        individual = results.get('ensemble_analysis', {}).get('individual_results', {})
+        if individual:
+            self.create_section_card(
+                scroll_layout,
+                "👥 ANALIZZATORI INDIVIDUALI",
+                self._format_analyzers_results(individual),
+                "#6f42c1", "#f3e5f5"
+            )
+
+        # 4. INPUT VALIDATION
+        validation = results.get('input_validation', {})
+        if validation:
+            quality = validation.get('quality_score', 0)
+            warnings = validation.get('warnings', [])
+
+            validation_text = f"📝 Quality Score: {quality:.3f}"
+            if warnings:
+                validation_text += f"\n⚠️ Warnings: {len(warnings)}"
+                for warning in warnings[:3]:  # Max 3 warnings
+                    validation_text += f"\n   • {warning}"
+
+            self.create_section_card(
+                scroll_layout,
+                "✅ INPUT VALIDATION",
+                validation_text,
+                "#ff9800", "#fff3e0"
+            )
+
+        # 5. SYSTEM INFO
+        system_info = results.get('system_info', {})
+        if system_info:
+            calibrated = "✅ Sì" if system_info.get('is_calibrated') else "❌ No"
+            threshold = system_info.get('calibration_threshold', 'N/A')
+            analyzers = system_info.get('ensemble_analyzers_count', 'N/A')
+
+            self.create_section_card(
+                scroll_layout,
+                "⚙️ SYSTEM STATUS",
+                f"""🎛️ Sistema Calibrato: {calibrated}
+📏 Calibrated Threshold: {threshold}
+🔧 Analyzers Count: {analyzers}""",
+                "#607d8b", "#eceff1"
+            )
+
         scroll.setWidget(scroll_widget)
         layout.addWidget(scroll)
-        
-        # Pulsanti di chiusura
+
+        # Pulsanti
         button_layout = QHBoxLayout()
+        calibrate_btn = QPushButton("🎯 Calibra Sistema")
+        calibrate_btn.clicked.connect(lambda: self._calibrate_system(dialog))
         close_btn = QPushButton("Chiudi")
         close_btn.clicked.connect(dialog.accept)
+
+        button_layout.addWidget(calibrate_btn)
         button_layout.addStretch()
         button_layout.addWidget(close_btn)
         layout.addLayout(button_layout)
-        
-        # Stile della dialog
-        dialog.setStyleSheet("""
+
+        dialog.setStyleSheet(self._get_dialog_style())
+        dialog.exec()
+
+    def create_section_card(self, parent_layout, title: str, content: str, color: str, bg_color: str):
+        """Crea una card con titolo e contenuto"""
+        group = QGroupBox(title)
+        group.setStyleSheet(f"""
+            QGroupBox {{
+                font-size: 15px;
+                font-weight: bold;
+                color: {color};
+                border: 2px solid {color};
+                border-radius: 8px;
+                margin: 5px;
+                padding-top: 15px;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 8px 0 8px;
+            }}
+        """)
+        layout = QVBoxLayout(group)
+
+        label = QLabel(content)
+        label.setStyleSheet(f"""
+            font-size: 13px;
+            color: #000;
+            padding: 12px;
+            background-color: {bg_color};
+            border-radius: 4px;
+        """)
+        label.setWordWrap(True)
+        layout.addWidget(label)
+
+        parent_layout.addWidget(group)
+
+    def _format_analyzers_results(self, individual_results: Dict) -> str:
+        """Formatta i risultati degli analizzatori individuali"""
+        text = ""
+        for name, result in individual_results.items():
+            if isinstance(result, dict) and 'ai_probability' in result:
+                ai_prob = result['ai_probability']
+                confidence = result.get('confidence', 0)
+                text += f"🔹 {name}:\n"
+                text += f"   AI Probability: {ai_prob:.4f}\n"
+                text += f"   Confidence: {confidence:.4f}\n\n"
+        return text.strip()
+
+    def _get_dialog_style(self) -> str:
+        """Restituisce lo stile della dialog"""
+        return """
             QDialog {
                 background-color: #f8f9fa;
             }
             QScrollArea {
-                border: 1px solid #dee2e6;
-                border-radius: 6px;
-                background-color: white;
+                border: none;
+                background-color: transparent;
             }
             QPushButton {
                 background-color: #6f42c1;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
+                padding: 10px 20px;
+                border-radius: 6px;
                 font-weight: bold;
+                font-size: 13px;
             }
             QPushButton:hover {
                 background-color: #5a32a3;
             }
-        """)
-        
-        dialog.exec()
+            QPushButton:pressed {
+                background-color: #4a2c7a;
+            }
+        """
+
+    def _calibrate_system(self, parent_dialog):
+        """Apre dialog per calibrazione"""
+        QMessageBox.information(
+            parent_dialog,
+            "🎯 Calibrazione Sistema",
+            "La calibrazione automatica è stata eseguita al primo avvio.\n\n"
+            "Per ricalibrare con dataset aggiornato, usa il comando:\n"
+            "python3 utils/calibrator.py\n\n"
+            "⚠️ La calibrazione richiede ~30 secondi"
+        )
     
     def create_ai_score_section(self, parent_layout, ai_score):
         """Crea sezione punteggio AI detection"""

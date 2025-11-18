@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+"""
+Test Script per Ensemble GUI
+Testa il sistema avanzato con i tuoi testi
+"""
+
+import sys
+sys.path.insert(0, '/home/martina/PycharmProjects/TextAnalyzer')
+
+from advanced_text_analyzer import AdvancedTextAnalyzerSystem
+
+def test_text(text, label="TEST"):
+    """Testa un testo e mostra risultati"""
+    print(f"\n{'='*70}")
+    print(f"🧪 {label}")
+    print('='*70)
+
+    analyzer = AdvancedTextAnalyzerSystem(auto_calibrate=False)
+    result = analyzer.analyze_text(text)
+
+    if 'error' in result:
+        print(f"❌ Errore: {result['error']}")
+        return
+
+    ensemble = result['ensemble_analysis']['ensemble_result']
+    confidence = result['confidence_analysis']
+
+    print(f"\n📊 RISULTATI:")
+    print(f"   Classification: {ensemble['classification']}")
+    print(f"   AI Probability: {ensemble['ai_probability']:.4f}")
+    print(f"   Human Probability: {ensemble['human_probability']:.4f}")
+    print(f"   Agreement Score: {ensemble['agreement_score']:.3f}")
+    print(f"   Certainty: {confidence['prediction_certainty']:.3f} ({confidence['certainty_level']})")
+    print(f"   Recommendation: {confidence['recommendation']}")
+
+    # Individual analyzers
+    individual = result['ensemble_analysis']['individual_results']
+    print(f"\n👥 ANALIZZATORI:")
+    for name, res in individual.items():
+        if isinstance(res, dict) and 'ai_probability' in res:
+            print(f"   • {name}: {res['ai_probability']:.4f}")
+
+    return result
+
+# I TUOI TESTI
+if __name__ == "__main__":
+    print("🎯 ENSEMBLE TEXT ANALYZER - TEST SCRIPT")
+    print("="*70)
+
+    # Test umano
+    human_text = """
+    I remember that rainy Tuesday like it was yesterday. The coffee shop on Fifth Avenue was nearly empty—just me, the barista with purple hair, and that old guy who always reads the newspaper while smoking his third cigarette of the morning.
+    """
+
+    # Test AI
+    ai_text = """
+    Artificial intelligence has revolutionized numerous industries through advanced machine learning algorithms and sophisticated data processing techniques. These technological innovations have demonstrated significant potential for improving efficiency, reducing operational costs, and enhancing overall productivity across various sectors.
+    """
+
+    # Esegui test
+    test_text(human_text, "TESTO UMANO")
+    test_text(ai_text, "TESTO AI")
+
+    print(f"\n{'='*70}")
+    print("✅ TEST COMPLETE!")
+    print("="*70)
+    print("\n💡 Per testare tuoi testi, modifica questo script e aggiungi:")
+    print("   test_text('Il tuo testo qui', 'LA TUA ETICHETTA')")

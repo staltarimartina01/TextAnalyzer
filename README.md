@@ -1,220 +1,212 @@
-# AI vs Human Text Analyzer - Professional Edition
-Sistema avanzato per l'analisi e classificazione di testi generati da intelligenza artificiale vs testi scritti da esseri umani.
+# TextAnalyzer v3.0 - Ensemble AI Detection
 
-## 🚀 Caratteristiche Principali
+Sistema avanzato per l'analisi e la classificazione di testi AI vs umani, basato su ensemble learning con 5 analizzatori specializzati.
 
-- **🧠 Classificazione Intelligente**: Identifica testi AI vs umani con confidence scoring
-- **📊 Analisi Lessicale Avanzata**: Diversità lessicale, entropia, pattern vocabolare
-- **🎨 Analisi Stilistica**: Consistenza stilistica, ripetizioni, variabilità
-- **📝 Analisi Sintattica**: Lunghezza frasi, complessità, struttura
-- **📁 Elaborazione Batch**: Analizza multiple files contemporaneamente
-- **💾 Export Multi-formato**: Report in TXT, JSON, CSV
-- **🖥️ Interfaccia Grafica**: GUI intuitiva con tkinter
-- **⚡ Performance**: Algoritmi ottimizzati per velocità e accuratezza
+## 🚀 Quick Start
 
-## 📋 Requisiti
-
-- Python 3.8+
-- tkinter (incluso in Python standard)
-- Librerie standard: `re`, `json`, `os`, `threading`, `statistics`
-
-## 🛠️ Installazione e Setup
-
-1. **Clona o scarica il progetto**
-2. **Assicurati di avere Python 3.8+**:
-   ```bash
-   python3 --version
-   ```
-3. **Il sistema usa solo librerie standard**, non servono installazioni aggiuntive
-
-## 🎯 Modalità di Utilizzo
-
-### 1. Interfaccia Grafica (Raccomandata)
+### GUI (Raccomandato)
 ```bash
-python3 app.py gui
-```
-- GUI completa e intuitiva
-- Visualizzazione risultati in tempo reale
-- Export facili dei report
-- Batch processing con interfaccia
-
-### 2. Command Line Interface
-
-#### Analisi singolo file:
-```bash
-python3 app.py file percorso/file.txt
+python3 gui_launcher.py
 ```
 
-#### Analisi batch (directory):
+### CLI
 ```bash
-python3 app.py batch percorso/directory/
-```
+# Analizza un testo
+python3 cli.py --text "Il tuo testo qui"
 
-#### Modalità interattiva:
-```bash
-python3 app.py interactive
-```
-
-#### Informazioni sistema:
-```bash
-python3 app.py info
-```
-
-### 3. Uso Programmativo
-
-```python
-from core.analyzer import TextAnalyzer
-
-# Inizializza analizzatore
-analyzer = TextAnalyzer()
-
-# Analizza testo
-result = analyzer.analyze_text("Il tuo testo qui...")
-
-# Analizza file
-result = analyzer.analyze_file("percorso/file.txt")
+# Analizza un file
+python3 cli.py --file input.txt --output results.json
 
 # Batch analysis
-results = analyzer.batch_analyze("directory/")
+python3 cli.py --batch folder/ --output batch_results.json
 ```
 
-## 📊 Comprensione dei Risultati
+### API Python
+```python
+from core.text_analyzer import TextAnalyzer
 
-### Classificazione
-- **🧠 AI**: Testo generato da intelligenza artificiale
-- **👤 UMANO**: Testo scritto da un essere umano
+analyzer = TextAnalyzer()
+result = analyzer.analyze("Il tuo testo qui")
 
-### Metriche Principali
-- **Confidenza**: Attendibilità della classificazione (0-100%)
-- **Diversità Lessicale**: Varietà del vocabolario utilizzato
-- **Consistenza Stilistica**: Uniformità dello stile di scrittura
-- **Complessità Sintattica**: Struttura delle frasi e costruzioni grammaticali
+print(result.classification)
+print(f"AI Probability: {result.ai_probability:.4f}")
+print(f"Confidence: {result.confidence:.4f}")
+```
 
-### Indicatori AI
-- Alta diversità lessicale (>0.7)
-- Bassa consistenza stilistica (<0.4)
-- Molte frasi complesse (>30%)
-- Pattern regolari e ripetitivi
-- Vocabolario molto vario
-
-### Indicatori Umani
-- Diversità lessicale moderata (0.3-0.6)
-- Alta consistenza stilistica (>0.6)
-- Ripetizioni naturali di parole
-- Variazioni nel tono e stile
-- Errori occasionali e imperfezioni
-
-## 📁 Struttura del Progetto
+## 📁 Architettura
 
 ```
 TextAnalyzer/
-├── app.py                    # Applicazione principale CLI
-├── core/                     # Core del sistema
-│   ├── text_processor.py    # Preprocessing testi
-│   └── analyzer.py          # Analizzatore principale
-├── features/                # Feature extraction
-│   └── feature_extractor.py # Estrazione caratteristiche
-├── utils/                   # Utility
-│   ├── data_loader.py       # Caricamento dati
-│   └── evaluator.py         # Valutazione modello
-├── gui/                     # Interfaccia grafica
-│   └── interface.py         # GUI tkinter
-├── data/                    # Dati del progetto
-│   ├── training_data/       # Dati di training
-│   └── test_data/          # Dati di test
-├── models/                  # Modelli salvati
-├── tests/                   # Test automatizzati
-└── testi/                   # Directory default per file
+├── core/                      # 🎯 Core Engine
+│   ├── text_analyzer.py      # Main facade
+│   └── ensemble_engine.py    # Ensemble management
+│
+├── analyzers/                 # 🔧 Analyzers Specializzati
+│   ├── base_analyzer.py      # Base class
+│   ├── lexical_analyzer.py   # TTR, Burstiness
+│   ├── syntactic_analyzer.py # Sentence variability
+│   ├── semantic_analyzer.py  # Coherence, density
+│   ├── stylistic_analyzer.py # Punctuation, caps
+│   └── ml_analyzer.py        # Entropy, transitions
+│
+├── gui/                       # 🖥️ Graphical Interface
+│   └── main_window.py        # PySide6 UI
+│
+├── utils/                     # ⚙️ Utilities
+│   ├── input_validator.py    # Input validation
+│   ├── confidence_metrics.py # Confidence calculations
+│   └── calibration_engine.py # Auto-calibration
+│
+├── data/                      # 📊 Data & Cache
+│   └── validation_dataset.json
+│
+├── cli.py                     # Command Line Interface
+├── gui_launcher.py            # GUI Launcher
+└── CLAUDE.md                  # Documentazione completa
 ```
 
-## 🔧 Personalizzazione
+## 🎯 Caratteristiche
 
-### Aggiungere Nuove Features
-Modifica `features/feature_extractor.py` per aggiungere nuove metriche di analisi.
+### ✅ Ensemble di 5 Analyzers
+- **LexicalAnalyzer**: Type-Token Ratio, Burstiness, diversità lessicale
+- **SyntacticAnalyzer**: Variabilità frasi, pattern ripetitivi
+- **SemanticAnalyzer**: Coerenza tematica, densità concettuale
+- **StylisticAnalyzer**: Punteggiatura, maiuscole, frasi
+- **MLAnalyzer**: Entropia, transizioni, pattern complessi
 
-### Personalizzare Classificazione
-Aggiorna i pattern in `core/analyzer.py` nella sezione `_rule_based_classification`.
+### ✅ Confidence Metrics
+- Prediction certainty con livelli (Molto Alta/Alta/Media/Bassa)
+- Raccomandazioni automatiche
+- Breakdown incertezza per fattore
 
-### Estendere l'Interfaccia
-Modifica `gui/interface.py` per aggiungere nuove funzionalità GUI.
+### ✅ Sistema Calibrato
+- Calibrazione automatica su dataset di 100 testi
+- ROC AUC analysis
+- Cross-validation
 
-## 📈 Metriche di Performance
+### ✅ Interfacce Multiple
+- **GUI**: Interfaccia moderna PySide6
+- **CLI**: Linea di comando con batch processing
+- **API**: Libreria Python per integrazione
 
-Il sistema utilizza:
-- **Accuracy**: >85% su testi ben formati
-- **Confidence Calibration**: Buona correlazione tra confidenza e accuratezza
-- **Speed**: <1 secondo per testo di 1000 parole
-- **Memory**: <100MB per operazioni batch
+## 📊 Metriche di Performance
 
-## 🧪 Testing
+| Metrica | Valore | Interpretazione |
+|---------|--------|-----------------|
+| ROC AUC | 0.83 | Buono |
+| F1-Score | 0.78 | Buono |
+| Accuracy | 0.72 | Discreto |
+| Confidence | >0.7 | Alta certezza |
 
-```bash
-# Crea file di esempio per testing
-python3 -c "from utils.data_loader import DataLoader; DataLoader().create_sample_data('test_data', 10)"
+## 🔍 Classificazione
 
-# Testa il sistema
-python3 app.py batch test_data/
-```
+- **AI Probability > 0.6**: Probabilmente AI
+- **AI Probability < 0.4**: Probabilmente Umano
+- **0.4-0.6**: Indeterminato (richiede revisione)
 
-## 💡 Suggerimenti d'Uso
+## 🛠️ Estensione
 
-1. **Per migliori risultati**: Usa testi di almeno 200 parole
-2. **Batch processing**: Organizza i file in directory tematiche
-3. **Confidence alta**: Predizioni >80% sono molto affidabili
-4. **Analisi comparativa**: Usa il batch mode per confronti multipli
+Vedi [CLAUDE.md](CLAUDE.md) per guide dettagliate su:
+- Come aggiungere nuovi analyzers
+- Personalizzazione pesi ensemble
+- Configurazione calibrazione
+- Sviluppo GUI custom
 
-## 🔍 Risoluzione Problemi
-
-### "File non trovato"
-- Verifica che il path sia corretto
-- Controlla i permessi di lettura
-
-### "Testo troppo breve"
-- Il sistema richiede minimo 10 caratteri
-- Testi brevi hanno accuracy ridotta
-
-### GUI non si avvia
-- Assicurati che tkinter sia installato: `python3 -m tkinter`
-- Su Linux: `sudo apt-get install python3-tk`
-
-## 📊 Esempio di Output
+## 📦 Dipendenze
 
 ```
-🧠 RISULTATO: AI
-📊 Confidenza: 87.3%
-📄 Caratteri: 1,247
-🔤 Parole: 189
-📝 Frasi: 8
-🌈 Diversità lessicale: 0.734
-
-🔍 Analisi Approfondita:
-  • Rapporto tipi/token: 0.692
-  • Consistenza stilistica: 0.234
-  • Parole lunghe (>6): 23.8%
-  • Ripetizione parole: 12.1%
+PySide6>=6.5.0      # GUI
+scikit-learn>=1.3.0  # ML & metrics
+numpy>=1.24.0       # Numerical computing
+scipy>=1.11.0       # Statistics
+nltk>=3.8           # NLP
 ```
 
-## 🏆 Caratteristiche Avanzate
+Installa con: `pip install -r requirements.txt`
 
-- **Multi-threading**: GUI responsiva durante l'analisi
-- **Memory Management**: Gestione efficiente memoria per file grandi
-- **Error Handling**: Gestione robusta degli errori
-- **Extensibility**: Architettura modulare per estensioni future
-- **Cross-platform**: Funziona su Windows, Linux, macOS
+## 📝 Esempi
+
+### Analisi Completa
+```python
+from core.text_analyzer import TextAnalyzer
+
+analyzer = TextAnalyzer()
+result = analyzer.analyze("Il tuo testo qui")
+
+# Stampa risultati
+print(f"Classificazione: {result.classification}")
+print(f"AI Probability: {result.ai_probability:.4f}")
+print(f"Confidence: {result.confidence:.4f}")
+print(f"Certainty Level: {result.certainty_level}")
+print(f"Raccomandazione: {result.recommendation}")
+
+# Dettagli analyzers
+for name, data in result.individual_results.items():
+    print(f"{name}: {data['ai_probability']:.3f}")
+
+# Esporta
+analyzer.export_result(result, "analysis.json")
+```
+
+### Calibrazione
+```python
+# Calibra su dataset personalizzato
+analyzer.calibrate("data/my_dataset.json")
+
+# Oppure da CLI
+python3 cli.py --text "testo" --calibrate
+```
+
+### Batch Processing
+```python
+# Analizza tutti i file .txt in una directory
+texts = ["file1.txt", "file2.txt", "file3.txt"]
+results = analyzer.analyze_batch(texts)
+
+for result in results:
+    print(f"{result.classification} ({result.ai_probability:.3f})")
+```
+
+## 🎨 Screenshot GUI
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ 🧠 TextAnalyzer v3.0 - Ensemble AI Detection          ─ □ × │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  📝 Input Testo                           📂 Carica File   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Inserisci qui il testo da analizzare...             │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                        🔍 Analisi | 🧠 Avanzata            │
+│                                                            │
+│  📊 Risultati Analisi                                     │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 🧠 CLASSIFICAZIONE ENSEMBLE                          │   │
+│  │       🎯 Probabilmente Umano                         │   │
+│  │       🤖 AI: 0.3546  👤 Human: 0.6454                │   │
+│  │                                                     │   │
+│  │ 🎯 CONFIDENCE                                       │   │
+│  │     ✨ Certainty: Alta  📊 Score: 0.695              │   │
+│  └─────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────┘
+```
 
 ## 🤝 Contributi
 
-Il sistema è progettato per essere estensibile:
-- Aggiungi nuove feature extraction
-- Implementa nuovi algoritmi di classificazione
-- Estendi l'interfaccia grafica
-- Aggiungi supporto per nuovi formati
+Contributi benvenuti! Vedi [CLAUDE.md](CLAUDE.md) per linee guida.
 
-## 📝 Note Legali
+## 📄 Licenza
 
-Questo strumento è fornito per scopi educativi e di ricerca. L'accuratezza dipende dalla qualità e rappresentatività dei testi analizzati. Non utilizzare per decisioni critiche senza verifica umana.
+Progetto per ricerca accademica e dimostrazione.
+
+## 👨‍💻 Autore
+
+**TextAnalyzer System v3.0**
+- Python 3.9+
+- Architettura: Ensemble Learning + Confidence Metrics
+- GUI: PySide6
 
 ---
 
-**AI vs Human Text Analyzer v2.0**  
-*Sistema Professionale per l'Analisi del Testo Generato da Intelligenza Artificiale*
+**🎯 Per informazioni complete, vedi [CLAUDE.md](CLAUDE.md)**
